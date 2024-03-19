@@ -1,10 +1,6 @@
 from asyncio import sleep
 from random import uniform
 from logging import Logger
-from typing import (
-    Any,
-    Deque,
-)
 
 from httpx import (
     AsyncClient,
