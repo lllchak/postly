@@ -4,12 +4,6 @@
 [submodule "lib/eigen"]
 	path = lib/eigen
 	url = https://github.com/eigenteam/eigen-git-mirror.git
-[submodule "lib/fastText"]
-	path = lib/fastText
-	url = https://github.com/facebookresearch/fastText.git
-[submodule "lib/onmtTokenizer"]
-	path = lib/onmtTokenizer
-	url = https://github.com/IlyaGusev/Tokenizer.git
 [submodule "lib/rocksdb"]
 	path = lib/rocksdb
 	url = https://github.com/facebook/rocksdb.git
