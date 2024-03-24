@@ -1,0 +1,87 @@
+syntax = "proto2";
+package postly;
+
+import "enum.proto";
+
+message TServerConfig {
+    optional uint32 threads = 1 [default = 1];
+    optional uint32 max_connection_num = 2 [default = 3];
+    optional uint32 max_connection_num_per_ip = 3 [default = 1];
+    optional uint32 idle_connection_timeout = 4 [default = 100];
+    optional uint32 keepalive_requests_number = 5 [default = 5];
+    optional uint32 pipelining_requests_number = 6 [default = 5];
+
+    required string db_path = 7;
+    required bool db_fail_if_missing = 8;
+    optional uint32 db_max_open_files = 9 [default = 5];
+
+    optional bool skip_irrelevant_docs = 10 [default = true];
+    optional uint32 clusterer_sleep = 11 [default = 5];
+
+    required string annotator_config_path = 12;
+    required string clusterer_config_path = 13;
+    required string summarizer_config_path = 14;
+    required string ranker_config_path = 15;
+}
+
+message TCategoryModelConfig{
+    required ELanguage language = 1;
+    required string path = 2;
+}
+
+message TEmbedderConfig {
+    optional EEmbedderType type = 1 [default = ET_UNDEFINED];
+    optional ELanguage language = 2 [default = NL_RU];
+    optional EEmbeddingKey embedding_key = 3 [default = EK_UNDEFINED];
+    optional EEmbedderField embedder_field = 4 [default = EF_UNDEFINED];
+    optional EAggregationMode aggregation_mode = 5 [default = AM_UNDEFINED];
+    optional uint32 max_words = 6 [default = 100];
+    optional string model_path = 7 [default = ""];
+    optional string vector_model_path = 8 [default = ""];
+    optional string vocabulary_path = 9 [default = ""];
+}
+
+message TAnnotatorConfig {
+    optional string lang_detect = 1 [default = ""];
+    repeated TCategoryModelConfig category_models = 2;
+    repeated TEmbedderConfig embedders = 3;
+    optional uint32 min_text_length = 4 [default = 100];
+    optional bool parse_links = 5 [default = false];
+    optional bool save_texts = 6 [default = true];
+    optional bool compute_nasty = 7 [default = true];
+    optional bool save_not_news = 8 [default = false];
+}
+
+message TClusteringEmbeddingKeyWeight {
+    required EEmbeddingKey embedding_key = 1;
+    optional float weight = 2 [default = 1.0];
+}
+
+message TClusteringConfig {
+    required ELanguage language = 1;
+    optional float small_threshold = 2 [default = 0.0];
+    optional uint64 small_cluster_size = 3 [default = 1];
+    optional float medium_threshold = 4 [default = 0.0];
+    optional uint64 medium_cluster_size = 5 [default = 1];
+    optional float large_threshold = 6 [default = 0.0];
+    optional uint64 large_cluster_size = 7 [default = 1];
+    required uint64 chunk_size = 8;
+    required uint64 intersection_size = 9;
+    optional bool use_timestamp_moving = 10 [default = true];
+    optional bool ban_same_hosts = 11 [default = true];
+    repeated TClusteringEmbeddingKeyWeight embedding_keys_weights = 12;
+}
+
+message TClustererConfig {
+    repeated TClusteringConfig clusterings = 1;
+    optional float iter_timestamp_percentile = 2 [default = 0.9];
+}
+
+message TSummarizerConfig {
+    required string hosts_rating = 1;
+    required string alexa_rating = 2;
+}
+
+message TRankerConfig {
+    optional uint64 min_cluster_size = 1 [default = 5];
+}

@@ -10,15 +10,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
-set(POSTLY_CXX_FLAGS "-pthread;-Wall;-Wextra;-Wno-sign-compare;-fno-omit-frame-pointer")
-set(POSTLY_CXX_DEBUG_FLAGS "-g;-O2;-fsanitize=address")
-set(POSTLY_LNK_DEBUG_FLAGS "-fsanitize=address")
-set(POSTLY_CXX_RELEASE_FLAGS "-funroll-loops;-Ofast;-march=x86-64;-mtune=generic;-msse3;-mssse3;-msse4;-msse4.1;-msse4.2")
+set(POSTLY_CXX_FLAGS "-pthread;-Wall;-Wextra;-Wno-sign-compare;-fno-omit-frame-pointer;")
+set(POSTLY_CXX_DEBUG_FLAGS "-fsanitize=address;")
+set(POSTLY_CXX_RELEASE_FLAGS "-funroll-loops;-mtune=generic;")
 
 set(BUILD_TESTING 0)
 add_subdirectory(lib/fasttext EXCLUDE_FROM_ALL)
 add_subdirectory(lib/tinyxml2)
 add_subdirectory(lib/eigen EXCLUDE_FROM_ALL)
+add_subdirectory(lib/torch EXCLUDE_FROM_ALL)
 
 set(BUILD_DROGON_SHARED OFF CACHE BOOL "" FORCE)
 set(BUILD_CTL OFF CACHE BOOL "" FORCE)
@@ -61,13 +61,13 @@ if (NOT APPLE)
     endif()
 endif()
 
-find_package(Torch REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-
 find_package(Protobuf REQUIRED)
 
 set(SOURCE_FILES
     src/annotator.cpp
+    src/db_document.cpp
+    src/utils.cpp
+    src/embedder/ft_embedder.cpp
 )
 
 file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")
@@ -75,13 +75,13 @@ file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")
 set(LIB_LIST
     ${Boost_LIBRARIES}
     ${Protobuf_LIBRARIES}
-    ${TORCH_LIBRARIES}
     tinyxml2
     OpenNMTTokenizer
     fasttext-static
     eigen
     rocksdb
     drogon
+    torch
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/lib")
@@ -96,7 +96,6 @@ add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${PROTO_SRCS} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LIB_LIST})
 target_compile_options(${PROJECT_NAME} PUBLIC "${POSTLY_CXX_FLAGS}")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Debug>:${POSTLY_CXX_DEBUG_FLAGS}>")
-target_link_libraries(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Debug>:${POSTLY_LNK_DEBUG_FLAGS}>")
 target_compile_options(${PROJECT_NAME} PUBLIC "$<$<CONFIG:Release>:${POSTLY_CXX_RELEASE_FLAGS}>")
 
 enable_testing()

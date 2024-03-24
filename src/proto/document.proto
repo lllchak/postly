@@ -1,0 +1,30 @@
+syntax = "proto2";
+package postly;
+
+import "enum.proto";
+
+message TEmbeddingProto {
+    required EEmbeddingKey key = 1;
+    repeated float value = 2;
+};
+
+message TDocumentProto {
+    required string filename = 1;
+    required string url = 2;
+    required string sitename = 3;
+    required uint64 pub_time = 4;
+    required uint64 fetch_time = 5;
+    optional uint32 ttl = 6 [default = 5];
+
+    required string title = 7;
+    required string text = 8;
+    optional string desc = 9 [default = ""];
+
+    required ELanguage language = 10;
+    required ECategory category = 11;
+
+    repeated string out_links = 12;
+    repeated TEmbeddingProto embeddings = 13;
+
+    required bool is_nasty = 14;
+};
