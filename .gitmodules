@@ -7,3 +7,9 @@
 [submodule "lib/rocksdb"]
 	path = lib/rocksdb
 	url = https://github.com/facebook/rocksdb.git
+[submodule "lib/fasttext"]
+	path = lib/fasttext
+	url = https://github.com/facebookresearch/fastText.git
+[submodule "lib/onmt_tokenizer"]
+	path = lib/onmt_tokenizer
+	url = https://github.com/IlyaGusev/Tokenizer.git
