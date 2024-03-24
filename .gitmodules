@@ -4,3 +4,6 @@
 [submodule "lib/eigen"]
 	path = lib/eigen
 	url = https://github.com/eigenteam/eigen-git-mirror.git
+[submodule "lib/fastText"]
+	path = lib/fastText
+	url = https://github.com/facebookresearch/fastText.git
