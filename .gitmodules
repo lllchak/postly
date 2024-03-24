@@ -13,3 +13,6 @@
 [submodule "lib/onmt_tokenizer"]
 	path = lib/onmt_tokenizer
 	url = https://github.com/IlyaGusev/Tokenizer.git
+[submodule "lib/torch"]
+	path = lib/torch
+	url = https://github.com/pytorch/pytorch.git

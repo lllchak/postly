@@ -152,3 +152,7 @@ cython_debug/
 
 # Downloaded data
 data/
+
+# Trash cache
+.vscode/
+.DS_Store
