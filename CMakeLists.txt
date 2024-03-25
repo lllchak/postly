@@ -18,7 +18,6 @@ set(BUILD_TESTING 0)
 add_subdirectory(lib/fasttext EXCLUDE_FROM_ALL)
 add_subdirectory(lib/tinyxml2)
 add_subdirectory(lib/eigen EXCLUDE_FROM_ALL)
-add_subdirectory(lib/torch EXCLUDE_FROM_ALL)
 
 set(BUILD_DROGON_SHARED OFF CACHE BOOL "" FORCE)
 set(BUILD_CTL OFF CACHE BOOL "" FORCE)
@@ -62,6 +61,8 @@ if (NOT APPLE)
 endif()
 
 find_package(Protobuf REQUIRED)
+find_package(Python REQUIRED Development)
+find_package(Torch REQUIRED)
 
 set(SOURCE_FILES
     src/annotator.cpp
@@ -75,13 +76,13 @@ file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")
 set(LIB_LIST
     ${Boost_LIBRARIES}
     ${Protobuf_LIBRARIES}
+    ${TORCH_LIBRARIES}
     tinyxml2
     OpenNMTTokenizer
     fasttext-static
     eigen
     rocksdb
     drogon
-    torch
 )
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/lib")

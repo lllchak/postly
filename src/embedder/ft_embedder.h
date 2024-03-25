@@ -2,7 +2,7 @@
 
 #include "embedder.h"
 
-#include <eigen/Core>
+#include <Eigen/Core>
 #include <fasttext.h>
 #include <torch/script.h>
 
@@ -29,4 +29,4 @@ private:
     fasttext::FastText VectorModel;
     std::size_t MaxWords;
     mutable torch::jit::script::Module Model;
-}
+};
