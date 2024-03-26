@@ -26,7 +26,7 @@ public:
 
 private:
     postly::EAggregationMode Mode;
-    fasttext::FastText VectorModel;
+    fasttext::FastText EmbeddingModel;
     std::size_t MaxWords;
     mutable torch::jit::script::Module Model;
 };
