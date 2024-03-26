@@ -11,9 +11,7 @@ int main() {
 
     TFTEmbedder ft_embedder(ft_embedder_config);
 
-    std::vector<float> res = ft_embedder.CalcEmbedding("");
-
-    std::cout << res.size() << std::endl;
+    std::vector<float> res = ft_embedder.CalcEmbedding("i hate programming");
 
     return 0;
 }

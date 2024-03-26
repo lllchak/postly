@@ -19,11 +19,11 @@ TFTEmbedder::TFTEmbedder(
 {
     assert(!embeddingModelPath.empty());
     EmbeddingModel.loadModel(embeddingModelPath);
-    LOG_DEBUG("FastText model loaded [" + embeddingModelPath + ']');
+    LOG_DEBUG("FastText model loaded [" << embeddingModelPath << ']');
 
     if (!modelPath.empty()) {
         Model = torch::jit::load(modelPath);
-        LOG_DEBUG("Torch model loaded [" + modelPath + ']');
+        LOG_DEBUG("Torch model loaded [" << modelPath << ']');
     }
 }
 
@@ -35,8 +35,76 @@ TFTEmbedder::TFTEmbedder(const postly::TEmbedderConfig &config)
                   config.model_path()) {}
 
 TEmbedder::TEmbedding TFTEmbedder::CalcEmbedding(const std::string& input) const {
-    std::istringstream ss(input);
-    const std::size_t embeddingSize = EmbeddingModel.getDimension();
+    std::istringstream input_stream(input);
+    const std::size_t size = EmbeddingModel.getDimension();
 
-    return std::vector<float>(embeddingSize);
+    fasttext::Vector baseEmb(size);
+    fasttext::Vector avgEmb(size);
+    fasttext::Vector maxEmb(size);
+    fasttext::Vector minEmb(size);
+
+    std::string word;
+    std::size_t n_words = 0;
+
+    while (input_stream >> word) {
+        if (n_words > MaxWords) {
+            break;
+        }
+
+        EmbeddingModel.getWordVector(baseEmb, word);
+        const float norm = baseEmb.norm();
+        if (norm - 0.0 < 1e-6) {
+            continue;
+        }
+        baseEmb.mul(1.0 / norm);
+
+        if (n_words == 0) {
+            maxEmb.addVector(baseEmb);
+            minEmb.addVector(baseEmb);
+        } else {
+            for (std::size_t i = 0; i < size; ++i) {
+                maxEmb[i] = std::max(maxEmb[i], baseEmb[i]);
+                minEmb[i] = std::min(minEmb[i], baseEmb[i]);
+            }
+        }
+        avgEmb.addVector(baseEmb);
+
+        n_words++;
+    }
+
+    if (n_words > 0) {
+        LOG_DEBUG("Processed " << n_words << " word(-s)");
+        avgEmb.mul(1.0 / static_cast<float>(n_words));
+    }
+
+    if (Mode == postly::AM_AVG) {
+        return TEmbedder::TEmbedding(avgEmb.data(), avgEmb.data() + avgEmb.size());
+    } else if (Mode == postly::AM_MIN) {
+        return TEmbedder::TEmbedding(minEmb.data(), minEmb.data() + minEmb.size());
+    } else if (Mode == postly::AM_MAX) {
+        return TEmbedder::TEmbedding(maxEmb.data(), maxEmb.data() + maxEmb.size());
+    }
+
+    assert(Mode == postly::AM_MATRIX);
+
+    int dim = static_cast<int>(size);
+    auto tensor = torch::zeros({dim * 3}, torch::requires_grad(false));
+
+    tensor.slice(0, 0, dim) = torch::from_blob(avgEmb.data(), {dim});
+    tensor.slice(0, dim, 2 * dim) = torch::from_blob(maxEmb.data(), {dim});
+    tensor.slice(0, 2 * dim, 3 * dim) = torch::from_blob(minEmb.data(), {dim});
+
+    std::vector<torch::jit::IValue> inputs;
+    inputs.emplace_back(tensor.unsqueeze(0));
+
+    at::Tensor outputTensor = Model.forward(inputs).toTensor().squeeze(0).contiguous();
+    float* outputTensorPtr = outputTensor.data_ptr<float>();
+    size_t outputDim = outputTensor.size(0);
+
+    std::vector<float> res(outputDim);
+    for (size_t i = 0; i < outputDim; i++) {
+        res[i] = outputTensorPtr[i];
+    }
+
+    return res;
 }
