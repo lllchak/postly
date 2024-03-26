@@ -156,3 +156,15 @@ data/
 # Trash cache
 .vscode/
 .DS_Store
+
+# Loaded models
+models/alexa_rating_4_fixed.txt
+models/en_cat_v5.ftz
+models/en_vectors_v3.bin
+models/lang_detect.ftz
+models/lang_detect_v10.ftz
+models/pagerank_rating.txt
+models/ru_cat_v5.ftz
+models/ru_idfs.txt
+models/ru_tfidf_tsvd_embedder.pt
+models/ru_vectors_v3.bin

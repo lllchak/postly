@@ -8,9 +8,9 @@
 
 TFTEmbedder::TFTEmbedder(
     const std::string& embeddingModelPath,
-    postly::EEmbedderField field,
-    postly::EAggregationMode mode,
-    std::size_t maxWords,
+    const postly::EEmbedderField field,
+    const postly::EAggregationMode mode,
+    const std::size_t maxWords,
     const std::string& modelPath
 )
     : TEmbedder(field)
@@ -27,14 +27,14 @@ TFTEmbedder::TFTEmbedder(
     }
 }
 
-TFTEmbedder::TFTEmbedder(postly::TEmbedderConfig config)
+TFTEmbedder::TFTEmbedder(const postly::TEmbedderConfig &config)
     : TFTEmbedder(config.vector_model_path(),
                   config.embedder_field(),
                   config.aggregation_mode(),
                   config.max_words(),
                   config.model_path()) {}
 
-TEmbedding TFTEmbedder::CalcEmbedding(const std::string& input) const {
+TEmbedder::TEmbedding TFTEmbedder::CalcEmbedding(const std::string& input) const {
     std::istringstream ss(input);
     const std::size_t embeddingSize = EmbeddingModel.getDimension();
 

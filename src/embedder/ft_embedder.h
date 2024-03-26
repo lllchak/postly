@@ -16,11 +16,12 @@ class TFTEmbedder : public TEmbedder {
 public:
     TFTEmbedder(
         const std::string& vectorModelPath,
-        postly::EEmbedderField field,
-        postly::EAggregationMode mode,
-        std::size_t maxWords);
+        const postly::EEmbedderField field,
+        const postly::EAggregationMode mode,
+        const std::size_t maxWords,
+        const std::string& modelPath);
 
-    explicit TFTEmbedder(postly::TEmbedderConfig config);
+    explicit TFTEmbedder(const postly::TEmbedderConfig& config);
 
     std::vector<float> CalcEmbedding(const std::string& input) const override;
 

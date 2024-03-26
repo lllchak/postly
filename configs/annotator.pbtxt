@@ -6,18 +6,18 @@ compute_nasty: true
 save_not_news: false
 category_models: [
     {
-        language: LN_RU
+        language: NL_RU
         path: "models/ru_cat_v5.ftz"
     },
     {
-        language: LN_EN
+        language: NL_EN
         path: "models/en_cat_v5.ftz"
     }
 ]
 embedders: [
     {
         type: ET_FASTTEXT
-        language: LN_EN
+        language: NL_EN
         embedding_key: EK_FASTTEXT_CLASSIC
         vector_model_path: "models/en_vectors_v3.bin"
         aggregation_mode: AM_MATRIX
@@ -27,7 +27,7 @@ embedders: [
     },
     {
         type: ET_FASTTEXT
-        language: LN_RU
+        language: NL_RU
         embedding_key: EK_FASTTEXT_TITLE
         vector_model_path: "models/ru_vectors_v3.bin"
         aggregation_mode: AM_MATRIX
@@ -37,7 +37,7 @@ embedders: [
     },
     {
         type: ET_FASTTEXT
-        language: LN_RU
+        language: NL_RU
         embedding_key: EK_FASTTEXT_TEXT
         vector_model_path: "models/ru_vectors_v3.bin"
         aggregation_mode: AM_MATRIX
