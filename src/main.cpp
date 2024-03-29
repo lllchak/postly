@@ -1,20 +1,31 @@
-#include "embedder/ft_embedder.h"
+#include "annotator.h"
 #include "config.pb.h"
-#include "utils.h"
+#include "db_document.h"
 #include "document.h"
+#include "embedder/ft_embedder.h"
+#include "utils.h"
 
-#include <vector>
 #include <iostream>
+#include <optional>
+#include <vector>
 
 int main() {
-    postly::TEmbedderConfig ft_embedder_config;
-    ParseConfig("configs/embedder.pbtxt", ft_embedder_config);
+    postly::TAnnotatorConfig annotator_config;
+    ParseConfig("configs/annotator.pbtxt", annotator_config);
 
-    TFTEmbedder ft_embedder(ft_embedder_config);
-
-    std::vector<float> res = ft_embedder.CalcEmbedding("i hate programming");
+    std::vector<std::string> langs = {"ru", "en"};
+    TAnnotator annotator = TAnnotator("configs/annotator.pbtxt", langs, "top");
 
     TDocument document = TDocument("data/data/20191101/00/993065305003958.html");
+    std::optional<TDBDocument> dbDoc = annotator.ProcessDocument(document);
+
+    if (dbDoc.has_value()) {
+        std::cout << '\"' << dbDoc->Title << "\" and " << '\"' << dbDoc->Text << "\" embedding:\n[";
+        for (const float val : dbDoc->Embeddings[postly::EK_FASTTEXT_CLASSIC]) {
+            std::cout << val << ", ";
+        }
+        std::cout << "]\n";
+    }
 
     return 0;
 }
