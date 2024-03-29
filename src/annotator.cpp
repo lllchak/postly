@@ -47,7 +47,7 @@ TAnnotator::TAnnotator(const std::string& configPath,
             continue;
         }
         CategDetectors[lang].loadModel(config.path());
-        LOG_DEBUG(ToString(lang) << " category model loaded");
+        LOG_DEBUG("FastText:lang=" << ToString(lang) << " category model loaded");
     }
 
     for (const auto& config : Config.embedders()) {
@@ -57,7 +57,6 @@ TAnnotator::TAnnotator(const std::string& configPath,
         }
         postly::EEmbeddingKey key = config.embedding_key();
         Embedders[std::make_pair(lang, key)] = EmbedderFromConfig(config);
-        LOG_DEBUG(ToString(lang) << " embedder loaded");
     }
 }
 

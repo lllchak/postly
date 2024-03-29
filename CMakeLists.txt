@@ -72,6 +72,7 @@ set(SOURCE_FILES
     src/nasty.cpp
     src/utils.cpp
     src/embedder/ft_embedder.cpp
+    src/thread_pool/thread_pool.cpp
 )
 
 file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")
