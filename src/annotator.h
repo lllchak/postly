@@ -3,6 +3,7 @@
 #include "config.pb.h"
 
 #include "db_document.h"
+#include "document.h"
 #include "embedder/embedder.h"
 
 #include <memory>
@@ -12,6 +13,7 @@
 #include <vector>
 
 #include <onmt/Tokenizer.h>
+#include <fasttext.h>
 
 struct TDocument;
 
@@ -19,12 +21,20 @@ namespace tinyxml2 {
 class XMLDocument;
 }  // namespace tinyxml2
 
+namespace fasttext {
+class FastText;
+}  // namespace fasttext
+
+using TFTCategDetectors =
+    std::unordered_map<postly::ELanguage, fasttext::FastText>;
+
 class TAnnotator {
 public:
     explicit TAnnotator(
-        const std::string configPath,
+        const std::string& configPath,
         const std::vector<std::string>& langs,
-        bool saveNotNews = false,
+        const bool saveNotNews = false,
+        const bool computeNasty = true,
         const std::string& mode = "top");
 
     std::vector<TDBDocument> ProcessAll(
@@ -42,7 +52,7 @@ private:
     std::optional<TDocument> ParseHtml(
         const tinyxml2::XMLDocument& html, const std::string& fileName) const;
 
-    std::string PreprocessText(const std::string& text) const;
+    std::string Tokenize(const std::string& text) const;
 
 private:
     postly::TAnnotatorConfig Config;
@@ -50,6 +60,8 @@ private:
     std::unordered_set<postly::ELanguage> Languages;
     onmt::Tokenizer Tokenizer;
 
+    fasttext::FastText LangDetector;
+    TFTCategDetectors CategDetectors;
     std::map<std::pair<postly::ELanguage, postly::EEmbeddingKey>, std::unique_ptr<TEmbedder>> Embedders;
 
     bool SaveNotNews = false;

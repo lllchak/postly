@@ -4,7 +4,7 @@
 TDBDocument TDBDocument::FromProto(const postly::TDocumentProto& proto) {
     TDBDocument document;
 
-    document.FileName = proto.filename();
+    document.Filename = proto.filename();
     document.Url = proto.url();
     document.Host = GetHostFromUrl(proto.url());
     document.SiteName = proto.sitename();
@@ -55,7 +55,7 @@ bool TDBDocument::ParseFromArray(const void* data, const int size, TDBDocument* 
 postly::TDocumentProto TDBDocument::ToProto() const {
     postly::TDocumentProto proto;
 
-    proto.set_filename(FileName);
+    proto.set_filename(Filename);
     proto.set_url(Url);
     proto.set_sitename(SiteName);
     proto.set_pub_time(PublicationTime);
@@ -87,7 +87,7 @@ nlohmann::json TDBDocument::ToJson() const {
         {"timestamp", FetchTime},
         {"title", Title},
         {"description", Description},
-        {"file_name", GetFilename(FileName)},
+        {"file_name", GetFilename(Filename)},
         {"text", Text},
         {"language", Language},
         {"category", Category}

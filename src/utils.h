@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <nlohmann_json/json.hpp>
 
 #define ENSURE(CONDITION, MESSAGE)               \
     do {                                         \
@@ -30,3 +31,15 @@ void ParseConfig(const std::string& fname, TConfig& config) {
     const bool success = google::protobuf::TextFormat::Parse(&fileInput, &config);
     ENSURE(success, "Invalid protobug file");
 }
+
+template<typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+std::string ToString(T e) {
+    return nlohmann::json(e);
+}
+
+template<typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
+T FromString(const std::string& s) {
+    return nlohmann::json(s).get<T>();
+}
+
+uint64_t DateToTimestamp(const std::string& date);

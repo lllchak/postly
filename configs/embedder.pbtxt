@@ -1,0 +1,8 @@
+type: ET_FASTTEXT
+language: NL_EN
+embedding_key: EK_FASTTEXT_CLASSIC
+vector_model_path: "models/en_vectors_v3.bin"
+aggregation_mode: AM_MATRIX
+embedder_field: EF_ALL
+max_words: 150
+model_path: "models/en_sentence_embedder_v3.pt"

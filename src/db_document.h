@@ -12,7 +12,7 @@ class TDBDocument {
 public:
     using TEmbedding = std::vector<float>;
 
-    std::string FileName;
+    std::string Filename;
     std::string Url;
     std::string SiteName;
     std::string Host;

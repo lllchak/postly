@@ -67,6 +67,9 @@ find_package(Torch REQUIRED)
 set(SOURCE_FILES
     src/annotator.cpp
     src/db_document.cpp
+    src/detect.cpp
+    src/document.cpp
+    src/nasty.cpp
     src/utils.cpp
     src/embedder/ft_embedder.cpp
 )
