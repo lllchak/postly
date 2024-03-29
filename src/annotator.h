@@ -33,8 +33,6 @@ public:
     explicit TAnnotator(
         const std::string& configPath,
         const std::vector<std::string>& langs,
-        const bool saveNotNews = false,
-        const bool computeNasty = true,
         const std::string& mode = "top");
 
     std::vector<TDBDocument> ProcessAll(
@@ -64,8 +62,8 @@ private:
     TFTCategDetectors CategDetectors;
     std::map<std::pair<postly::ELanguage, postly::EEmbeddingKey>, std::unique_ptr<TEmbedder>> Embedders;
 
+    std::string Mode;
     bool SaveNotNews = false;
     bool SaveTexts = false;
     bool ComputeNasty = false;
-    std::string Mode;
 };

@@ -24,20 +24,14 @@ EmbedderFromConfig(const postly::TEmbedderConfig& config) {
 
 TAnnotator::TAnnotator(const std::string& configPath,
                        const std::vector<std::string>& langs,
-                       const bool saveNotNews,
-                       const bool computeNasty,
                        const std::string& mode)
         : Tokenizer(onmt::Tokenizer::Mode::Conservative,
                     onmt::Tokenizer::Flags::CaseFeature)
-        , SaveNotNews(saveNotNews)
-        , ComputeNasty(computeNasty)
         , Mode(mode) {
     ParseConfig(configPath, Config);
-    SaveTexts = Config.save_texts() || (Mode == "json");
     SaveNotNews |= Config.save_not_news();
+    SaveTexts |= (Config.save_texts() || (mode == "json"));
     ComputeNasty |= Config.compute_nasty();
-
-    LOG_DEBUG("Preparing models...");
 
     LangDetector.loadModel(Config.lang_detect());
     LOG_DEBUG("FastText language detector loaded");
@@ -46,11 +40,29 @@ TAnnotator::TAnnotator(const std::string& configPath,
         postly::ELanguage lang = FromString<postly::ELanguage>(language);
         Languages.insert(lang);
     }
+
+    for (const auto& config : Config.category_models()) {
+        const postly::ELanguage lang = config.language();
+        if (Languages.find(lang) == Languages.end()) {
+            continue;
+        }
+        CategDetectors[lang].loadModel(config.path());
+        LOG_DEBUG(ToString(lang) << " category model loaded");
+    }
+
+    for (const auto& config : Config.embedders()) {
+        const postly::ELanguage lang = config.language();
+        if (Languages.find(lang) == Languages.end()) {
+            continue;
+        }
+        postly::EEmbeddingKey key = config.embedding_key();
+        Embedders[std::make_pair(lang, key)] = EmbedderFromConfig(config);
+        LOG_DEBUG(ToString(lang) << " embedder loaded");
+    }
 }
 
 std::optional<TDBDocument>
-TAnnotator::ProcessDocument(const TDocument &doc) const
-{
+TAnnotator::ProcessDocument(const TDocument& doc) const {
     TDBDocument dbDoc;
     dbDoc.Language = DetectLanguage(LangDetector, doc);
     dbDoc.Url = doc.Url;
