@@ -70,11 +70,14 @@ std::string GetFilename(const std::string& path);
 
 template <class TConfig>
 void ParseConfig(const std::string& fname, TConfig& config) {
-    const int fileDesc = open(fname.c_str(), O_RDONLY);
-    ENSURE(fileDesc >= 0, "Could not open config file");
-    google::protobuf::io::FileInputStream fileInput(fileDesc);
-    const bool success = google::protobuf::TextFormat::Parse(&fileInput, &config);
-    ENSURE(success, "Invalid protobug file");
+    try {
+        const int fileDesc = open(fname.c_str(), O_RDONLY);
+        ENSURE(fileDesc >= 0, "Could not open config file");
+        google::protobuf::io::FileInputStream fileInput(fileDesc);
+        google::protobuf::TextFormat::Parse(&fileInput, &config);
+    } catch (std::exception& e) {
+        LOG_DEBUG("Error parsing config " << e.what());
+    }
 }
 
 template<typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>

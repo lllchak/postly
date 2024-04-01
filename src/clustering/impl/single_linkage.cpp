@@ -211,6 +211,7 @@ Eigen::MatrixXf TSlinkClustering::CalcDistances(
     const std::size_t nDocs = std::distance(begin, end);
     assert(nDocs);
     Eigen::MatrixXf resDistances = Eigen::MatrixXf::Zero(nDocs, nDocs);
+    LOG_DEBUG(resDistances.size() << ' ' << resDistances.row(0).size());
 
     for (const auto& [embKey, embWeight] : embKeysWeights) {
         const std::size_t embSize = begin->Embeddings.at(embKey).size();

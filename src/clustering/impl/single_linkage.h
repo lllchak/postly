@@ -6,7 +6,7 @@
 
 #include <Eigen/Core>
 
-class TSlinkClustering : IClustering {
+class TSlinkClustering : public IClustering {
 public:
     explicit TSlinkClustering(const postly::TClusteringConfig& config)
         : Config(config)
