@@ -3,6 +3,8 @@
 #include <ctime>
 #include <regex>
 
+#include <boost/filesystem.hpp>
+
 const std::regex
         hostRegex("(http|https)://(?:www\\.)?([^/ :]+):?([^/ ]*)(/?[^ #?]*)\\x3f?([^ #]*)#?([^ ]*)");
 
@@ -49,4 +51,45 @@ uint64_t DateToTimestamp(const std::string& date) {
         timestamp = timestamp + zone_ts;
     }
     return timestamp > 0 ? timestamp : 0;
+}
+
+void FilesFromDir(const std::string& dir,
+                  std::vector<std::string>& dirFiles,
+                  const std::size_t nDocs) {
+    boost::filesystem::path dirPath(dir);
+    boost::filesystem::recursive_directory_iterator start(dirPath);
+    boost::filesystem::recursive_directory_iterator end;
+
+    for (auto it = start; it != end; ++it) {
+        if (boost::filesystem::is_directory(it->path())) {
+            continue;
+        }
+        std::string path = it->path().string();
+        if (path.substr(path.length() - 5) == ".html") {
+            dirFiles.push_back(path);
+        }
+        if (nDocs != -1 && dirFiles.size() == nDocs) {
+            break;
+        }
+    }
+}
+
+boost::program_options::variables_map
+ParseOptions(const int argc, char** argv) {
+    boost::program_options::options_description od("options");
+    od.add_options()
+        ("input", boost::program_options::value<std::string>()->required(), "input")
+        ("ndocs", boost::program_options::value<std::size_t>()->default_value(-1), "ndocs")
+    ;
+
+    boost::program_options::positional_options_description p;
+    p.add("input", 1);
+
+    boost::program_options::command_line_parser parser{argc, argv};
+    parser.options(od).positional(p);
+    boost::program_options::parsed_options parsed_options = parser.run();
+    boost::program_options::variables_map vm;
+    boost::program_options::store(parsed_options, vm);
+    boost::program_options::notify(vm);
+    return vm;
 }

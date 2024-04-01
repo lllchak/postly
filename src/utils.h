@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 
+#include <boost/program_options.hpp>
 #include <fcntl.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -49,6 +50,16 @@ NLOHMANN_JSON_SERIALIZE_ENUM(
     }
 )
 
+NLOHMANN_JSON_SERIALIZE_ENUM(
+    postly::EInputFormat,
+    {
+        {postly::IF_UNDEFINED, nullptr},
+        {postly::IF_HTML, "html"},
+        {postly::IF_JSON, "json"},
+        {postly::IF_JSONL, "json_long"},
+    }
+)
+
 }  // namespace postly
 
 std::string GetHostFromUrl(const std::string& url);
@@ -80,3 +91,10 @@ T FromString(const std::string& s) {
 }
 
 uint64_t DateToTimestamp(const std::string& date);
+
+void FilesFromDir(const std::string& dir,
+                  std::vector<std::string>& dirFiles,
+                  const std::size_t nDocs);
+
+boost::program_options::variables_map
+ParseOptions(const int argc, char** argv);
