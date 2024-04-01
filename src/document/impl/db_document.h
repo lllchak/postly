@@ -2,7 +2,7 @@
 
 #include "document.pb.h"
 
-#include "nlohmann_json/json.hpp"
+#include <nlohmann_json/json.hpp>
 
 #include <string>
 #include <vector>

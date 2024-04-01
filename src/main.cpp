@@ -1,8 +1,8 @@
-#include "annotator.h"
+#include "annotator/annotator.h"
 #include "config.pb.h"
-#include "db_document.h"
-#include "document.h"
-#include "embedder/ft_embedder.h"
+#include "document/impl/db_document.h"
+#include "document/document.h"
+#include "embedder/impl/ft_embedder.h"
 #include "utils.h"
 
 #include <iostream>

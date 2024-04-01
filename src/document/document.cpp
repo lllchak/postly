@@ -1,5 +1,5 @@
 #include "document.h"
-#include "utils.h"
+#include "../utils.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>

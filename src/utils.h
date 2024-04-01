@@ -22,6 +22,8 @@
 
 #define LOG_DEBUG(x) std::cerr << x << std::endl;
 
+#define UNUSED(x) (void*)x
+
 namespace postly {
 
 NLOHMANN_JSON_SERIALIZE_ENUM(

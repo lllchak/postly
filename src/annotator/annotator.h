@@ -2,10 +2,10 @@
 
 #include "config.pb.h"
 
-#include "db_document.h"
-#include "document.h"
-#include "embedder/embedder.h"
-#include "thread_pool/thread_pool.h"
+#include "../document/impl/db_document.h"
+#include "../document/document.h"
+#include "../embedder/embedder.h"
+#include "../thread_pool/thread_pool.h"
 
 #include <memory>
 #include <optional>

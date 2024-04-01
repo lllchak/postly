@@ -1,8 +1,8 @@
 #include "annotator.h"
-#include "detect.h"
-#include "embedder/ft_embedder.h"
-#include "nasty.h"
-#include "utils.h"
+#include "../detect/detect.h"
+#include "../embedder/impl/ft_embedder.h"
+#include "../nasty/nasty.h"
+#include "../utils.h"
 
 #include <boost/algorithm/string/join.hpp>
 #include <tinyxml2/tinyxml2.h>

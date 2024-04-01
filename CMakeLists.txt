@@ -65,13 +65,16 @@ find_package(Python REQUIRED Development)
 find_package(Torch REQUIRED)
 
 set(SOURCE_FILES
-    src/annotator.cpp
-    src/db_document.cpp
-    src/detect.cpp
-    src/document.cpp
-    src/nasty.cpp
+    src/annotator/annotator.cpp
+    src/cluster/cluster.cpp
+    src/clustering/impl/single_linkage.cpp
+    src/clustering/clusterer.cpp
+    src/detect/detect.cpp
+    src/document/document.cpp
+    src/document/impl/db_document.cpp
+    src/nasty/nasty.cpp
     src/utils.cpp
-    src/embedder/ft_embedder.cpp
+    src/embedder/impl/ft_embedder.cpp
     src/thread_pool/thread_pool.cpp
 )
 

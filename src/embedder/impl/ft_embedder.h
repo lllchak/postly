@@ -1,6 +1,6 @@
 #pragma once
 
-#include "embedder.h"
+#include "../embedder.h"
 
 #include <Eigen/Core>
 #include <fasttext.h>

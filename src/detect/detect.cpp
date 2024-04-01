@@ -1,6 +1,6 @@
 #include "detect.h"
-#include "document.h"
-#include "utils.h"
+#include "../document/document.h"
+#include "../utils.h"
 
 #include <algorithm>
 #include <utility>

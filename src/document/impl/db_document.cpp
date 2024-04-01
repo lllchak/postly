@@ -1,5 +1,5 @@
 #include "db_document.h"
-#include "utils.h"
+#include "../../utils.h"
 
 TDBDocument TDBDocument::FromProto(const postly::TDocumentProto& proto) {
     TDBDocument document;
