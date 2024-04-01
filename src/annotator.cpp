@@ -11,7 +11,7 @@
 
 namespace {
 
-static std::unique_ptr<TEmbedder>
+static std::unique_ptr<IEmbedder>
 EmbedderFromConfig(const postly::TEmbedderConfig& config) {
     if (config.type() == postly::ET_FASTTEXT) {
         return std::make_unique<TFTEmbedder>(config);

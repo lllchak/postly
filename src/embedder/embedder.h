@@ -5,17 +5,15 @@
 
 #include <vector>
 
-class TEmbedder {
+class IEmbedder {
 public:
-    using TEmbedding = std::vector<float>;
+    explicit IEmbedder(postly::EEmbedderField field = postly::EF_ALL) : Field(field) {}
 
-    explicit TEmbedder(postly::EEmbedderField field = postly::EF_ALL) : Field(field) {}
+    virtual ~IEmbedder() = default;
 
-    virtual ~TEmbedder() = default;
+    virtual std::vector<float> CalcEmbedding(const std::string& input) const = 0;
 
-    virtual TEmbedding CalcEmbedding(const std::string& input) const = 0;
-
-    TEmbedding CalcEmbedding(const std::string& title, const std::string& text) const {
+    std::vector<float> CalcEmbedding(const std::string& title, const std::string& text) const {
         std::string input;
         if (Field == postly::EF_ALL) {
             input = title + " " + text;

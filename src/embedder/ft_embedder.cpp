@@ -13,7 +13,7 @@ TFTEmbedder::TFTEmbedder(
     const std::size_t maxWords,
     const std::string& modelPath
 )
-    : TEmbedder(field)
+    : IEmbedder(field)
     , Mode(mode)
     , MaxWords(maxWords)
 {
@@ -27,14 +27,14 @@ TFTEmbedder::TFTEmbedder(
     }
 }
 
-TFTEmbedder::TFTEmbedder(const postly::TEmbedderConfig &config)
+TFTEmbedder::TFTEmbedder(const postly::TEmbedderConfig& config)
     : TFTEmbedder(config.vector_model_path(),
                   config.embedder_field(),
                   config.aggregation_mode(),
                   config.max_words(),
                   config.model_path()) {}
 
-TEmbedder::TEmbedding TFTEmbedder::CalcEmbedding(const std::string& input) const {
+std::vector<float> TFTEmbedder::CalcEmbedding(const std::string& input) const {
     std::istringstream input_stream(input);
     const std::size_t size = EmbeddingModel.getDimension();
 
@@ -78,11 +78,11 @@ TEmbedder::TEmbedding TFTEmbedder::CalcEmbedding(const std::string& input) const
     }
 
     if (Mode == postly::AM_AVG) {
-        return TEmbedder::TEmbedding(avgEmb.data(), avgEmb.data() + avgEmb.size());
+        return std::vector<float>(avgEmb.data(), avgEmb.data() + avgEmb.size());
     } else if (Mode == postly::AM_MIN) {
-        return TEmbedder::TEmbedding(minEmb.data(), minEmb.data() + minEmb.size());
+        return std::vector<float>(minEmb.data(), minEmb.data() + minEmb.size());
     } else if (Mode == postly::AM_MAX) {
-        return TEmbedder::TEmbedding(maxEmb.data(), maxEmb.data() + maxEmb.size());
+        return std::vector<float>(maxEmb.data(), maxEmb.data() + maxEmb.size());
     }
 
     assert(Mode == postly::AM_MATRIX);

@@ -72,7 +72,7 @@ private:
 
     fasttext::FastText LangDetector;
     TFTCategDetectors CategDetectors;
-    std::map<std::pair<postly::ELanguage, postly::EEmbeddingKey>, std::unique_ptr<TEmbedder>> Embedders;
+    std::map<std::pair<postly::ELanguage, postly::EEmbeddingKey>, std::unique_ptr<IEmbedder>> Embedders;
 
     std::string Mode;
     bool SaveNotNews = false;

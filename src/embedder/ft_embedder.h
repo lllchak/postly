@@ -12,7 +12,7 @@ namespace fasttext {
 class FastText;
 }  // namespace fasttext
 
-class TFTEmbedder : public TEmbedder {
+class TFTEmbedder : public IEmbedder {
 public:
     TFTEmbedder(
         const std::string& vectorModelPath,
