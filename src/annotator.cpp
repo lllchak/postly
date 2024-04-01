@@ -60,6 +60,26 @@ TAnnotator::TAnnotator(const std::string& configPath,
     }
 }
 
+std::vector<TDBDocument>
+TAnnotator::ProcessAll(const std::vector<std::string>& filesNames,
+                       const postly::EInputFormat inputFormat) const {
+    TThreadPool threadPool;
+    std::vector<TDBDocument> dbDocs;
+    TFutures futures;
+
+    FillFutures(filesNames, dbDocs, futures, threadPool, inputFormat);
+
+    for (auto& futureDoc : futures) {
+        std::optional<TDBDocument> doc = futureDoc.get();
+        if (ValidateDoc(doc)) {
+            dbDocs.push_back(std::move(doc.value()));
+        }
+    }
+    futures.clear();
+    dbDocs.shrink_to_fit();
+    return dbDocs;
+}
+
 std::optional<TDBDocument>
 TAnnotator::ProcessDocument(const TDocument& doc) const {
     TDBDocument dbDoc;
@@ -112,9 +132,117 @@ TAnnotator::ProcessDocument(const TDocument& doc) const {
     return dbDoc;
 }
 
-std::string TAnnotator::Tokenize(const std::string& text) const {
+std::optional<TDBDocument> TAnnotator::ProcessHTML(const std::string& path) const {
+    std::optional<TDocument> html = ParseHTML(path);
+    return html.has_value() ? ProcessDocument(*html) : std::nullopt;
+}
+
+std::optional<TDBDocument> TAnnotator::ProcessHTML(const tinyxml2::XMLDocument& html,
+                                                 const std::string& filename) const {
+    std::optional<TDocument> doc = ParseHTML(html, filename);
+    return doc.has_value() ? ProcessDocument(*doc) : std::nullopt;
+}
+
+std::optional<TDocument> TAnnotator::ParseHTML(const std::string& path) const {
+    TDocument doc;
+    try {
+        doc.FromHTML(path.c_str(), Config.parse_links(), Config.shrink_text(), Config.max_words());
+    } catch (...) {
+        LOG_DEBUG("Bad HTML [" << path << ']');
+        return std::nullopt;
+    }
+    return doc;
+}
+
+std::optional<TDocument> TAnnotator::ParseHTML(const tinyxml2::XMLDocument& html,
+                                               const std::string& filename) const {
+    TDocument doc;
+    try {
+        doc.FromHTML(html, filename, Config.parse_links(), Config.shrink_text(), Config.max_words());
+    } catch (...) {
+        LOG_DEBUG("Bad HTML [" << filename << ']');
+        return std::nullopt;
+    }
+    return doc;
+}
+
+std::string TAnnotator::Tokenize(const std::string &text) const
+{
     std::vector<std::string> tokens;
     Tokenizer.tokenize(text, tokens);
 
     return boost::join(tokens, " ");
+}
+
+void TAnnotator::FillFutures(const std::vector<std::string>& filesNames,
+                             std::vector<TDBDocument>& dbDocs,
+                             TFutures& futures,
+                             TThreadPool& threadPool,
+                             const postly::EInputFormat inputFormat) const {
+    switch (inputFormat) {
+        case postly::IF_HTML: {
+            dbDocs.reserve(filesNames.size());
+            futures.reserve(filesNames.size());
+            for (const auto& path : filesNames) {
+                using TFunc = std::optional<TDBDocument>(TAnnotator::*)(const std::string&) const;
+                futures.push_back(threadPool.enqueue<TFunc>(&TAnnotator::ProcessHTML, this, path));
+            }
+            break;
+        }
+        case postly::IF_JSON: {
+            std::vector<TDocument> parsedDocs;
+            for (const auto& path: filesNames) {
+                std::ifstream fileStream(path);
+                nlohmann::json json;
+                fileStream >> json;
+                for (const auto& obj : json) {
+                    parsedDocs.emplace_back(obj);
+                }
+            }
+            parsedDocs.shrink_to_fit();
+            dbDocs.reserve(parsedDocs.size());
+            futures.reserve(parsedDocs.size());
+            for (const auto& parsedDoc: parsedDocs) {
+                futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
+            }
+            break;
+        }
+        case postly::IF_JSONL: {
+            std::vector<TDocument> parsedDocs;
+            for (const auto& path: filesNames) {
+                std::ifstream fileStream(path);
+                std::string record;
+                while (std::getline(fileStream, record)) {
+                    parsedDocs.emplace_back(nlohmann::json::parse(record));
+                }
+            }
+            parsedDocs.shrink_to_fit();
+            dbDocs.reserve(parsedDocs.size());
+            futures.reserve(parsedDocs.size());
+            for (const auto& parsedDoc: parsedDocs) {
+                futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
+            }
+            break;
+        }
+        default: {
+            ENSURE(false, "Inappropriate input format, got " << ToString(inputFormat));
+            break;
+        }
+    }
+}
+
+bool TAnnotator::ValidateDoc(const std::optional<TDBDocument>& doc) const {
+    if (!doc.has_value()) {
+        return false;
+    }
+    if (Languages.find(doc->Language) == Languages.end()) {
+        return false;
+    }
+    if (!doc->IsFullyIndexed()) {
+        return false;
+    }
+    if (!doc->IsNews() && !SaveNotNews) {
+        return false;
+    }
+    return true;
 }

@@ -35,11 +35,11 @@ public:
     nlohmann::json ToJson() const;
     void FromJson(const char* fileName);
     void FromJson(const nlohmann::json& json);
-    void FromHtml(const char* fileName,
+    void FromHTML(const char* fileName,
                   bool parseLinks=false,
                   bool shrinkText=false,
                   size_t maxWords=200);
-    void FromHtml(const tinyxml2::XMLDocument& html,
+    void FromHTML(const tinyxml2::XMLDocument& html,
                   const std::string& fileName,
                   bool parseLinks=false,
                   bool shrinkText=false,

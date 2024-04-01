@@ -5,6 +5,7 @@
 #include "db_document.h"
 #include "document.h"
 #include "embedder/embedder.h"
+#include "thread_pool/thread_pool.h"
 
 #include <memory>
 #include <optional>
@@ -12,8 +13,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include <onmt/Tokenizer.h>
 #include <fasttext.h>
+#include <onmt/Tokenizer.h>
 
 struct TDocument;
 
@@ -30,6 +31,9 @@ using TFTCategDetectors =
 
 class TAnnotator {
 public:
+    using TFutures =
+        std::vector<std::future<std::optional<TDBDocument>>>;
+public:
     explicit TAnnotator(
         const std::string& configPath,
         const std::vector<std::string>& langs,
@@ -37,7 +41,7 @@ public:
 
     std::vector<TDBDocument> ProcessAll(
         const std::vector<std::string>& filesNames,
-        postly::EInputFormat inputFormat) const;
+        const postly::EInputFormat inputFormat) const;
 
     std::optional<TDBDocument> ProcessHTML(const std::string& path) const;
     std::optional<TDBDocument> ProcessHTML(
@@ -46,11 +50,19 @@ public:
 private:
     std::optional<TDBDocument> ProcessDocument(const TDocument& document) const;
 
-    std::optional<TDocument> ParseHtml(const std::string& path) const;
-    std::optional<TDocument> ParseHtml(
-        const tinyxml2::XMLDocument& html, const std::string& fileName) const;
+    std::optional<TDocument> ParseHTML(const std::string& path) const;
+    std::optional<TDocument> ParseHTML(
+        const tinyxml2::XMLDocument& html, const std::string& filename) const;
 
     std::string Tokenize(const std::string& text) const;
+
+    void FillFutures(const std::vector<std::string>& filesNames,
+                     std::vector<TDBDocument>& dbDocs,
+                     TFutures& futures,
+                     TThreadPool& threadPool,
+                     const postly::EInputFormat inputFormat) const;
+
+    bool ValidateDoc(const std::optional<TDBDocument>& doc) const;
 
 private:
     postly::TAnnotatorConfig Config;

@@ -10,7 +10,7 @@
 
 TDocument::TDocument(const char* filename) {
     if (boost::algorithm::ends_with(filename, ".html")) {
-        FromHtml(filename);
+        FromHTML(filename);
     } else if (boost::algorithm::ends_with(filename, ".json")) {
         FromJson(filename);
     }
@@ -22,7 +22,7 @@ TDocument::TDocument(const nlohmann::json& json) {
 
 TDocument::TDocument(const tinyxml2::XMLDocument& html,
                      const std::string& filename) {
-    FromHtml(html, filename);
+    FromHTML(html, filename);
 }
 
 nlohmann::json TDocument::ToJson() const {
@@ -97,24 +97,24 @@ void ParseLinksFromText(const tinyxml2::XMLElement* element,
     }
 }
 
-void TDocument::FromHtml(const char* filename,
+void TDocument::FromHTML(const char* filename,
                          bool parseLinks,
                          bool shrinkText,
-                         size_t maxWords) {
+                         std::size_t maxWords) {
     if (!boost::filesystem::exists(filename)) {
         throw std::runtime_error("HTML file not found");
     }
     tinyxml2::XMLDocument originalDoc;
     originalDoc.LoadFile(filename);
 
-    FromHtml(originalDoc, filename, parseLinks, shrinkText, maxWords);
+    FromHTML(originalDoc, filename, parseLinks, shrinkText, maxWords);
 }
 
-void TDocument::FromHtml(const tinyxml2::XMLDocument& originalDoc,
+void TDocument::FromHTML(const tinyxml2::XMLDocument& originalDoc,
                          const std::string& filename,
                          bool parseLinks,
                          bool shrinkText,
-                         size_t maxWords) {
+                         std::size_t maxWords) {
     Filename = filename;
 
     const tinyxml2::XMLElement* htmlElement = originalDoc.FirstChildElement("html");
