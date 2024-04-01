@@ -50,6 +50,8 @@ message TAnnotatorConfig {
     optional bool save_texts = 6 [default = true];
     optional bool compute_nasty = 7 [default = true];
     optional bool save_not_news = 8 [default = false];
+    optional uint32 max_words = 9 [default = 200];
+    optional bool shrink_text = 10 [default = false];
 }
 
 message TClusteringEmbeddingKeyWeight {
