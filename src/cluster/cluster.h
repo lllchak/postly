@@ -27,7 +27,7 @@ private:
     std::vector<TDBDocument> Documents;
 
 public:
-    explicit TCluster(std::uint64_t id)
+    explicit TCluster(const std::uint64_t id)
         : Id(id)
         {
         }

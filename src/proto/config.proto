@@ -87,3 +87,9 @@ message TSummarizerConfig {
 message TRankerConfig {
     optional uint64 min_cluster_size = 1 [default = 5];
 }
+
+message TAgencyConfig {
+    required string filename = 1;
+    optional double unk_rating = 2 [default = 0.1];
+    optional bool set_min_as_unk = 3 [default = false];
+}
