@@ -1,4 +1,5 @@
 #include "summarizer.h"
+
 #include "../utils.h"
 
 TSummarizer::TSummarizer(const std::string& configPath) {

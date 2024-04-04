@@ -76,20 +76,26 @@ void FilesFromDir(const std::string& dir,
 
 boost::program_options::variables_map
 ParseOptions(const int argc, char** argv) {
-    boost::program_options::options_description od("options");
+    using namespace boost::program_options;
+
+    options_description od("options");
     od.add_options()
-        ("input", boost::program_options::value<std::string>()->required(), "input")
-        ("ndocs", boost::program_options::value<std::size_t>()->default_value(-1), "ndocs")
+        ("input", value<std::string>()->required(), "input")
+        ("ndocs", value<std::size_t>()->default_value(-1), "ndocs")
+        ("window_size", value<std::uint64_t>()->default_value(3600*8), "window_size")
+        ("save_not_news", value<bool>()->default_value(false), "save_not_news")
+        ("debug_mode", value<bool>()->default_value(false), "debug_mode")
     ;
 
-    boost::program_options::positional_options_description p;
+    positional_options_description p;
     p.add("input", 1);
 
-    boost::program_options::command_line_parser parser{argc, argv};
+    command_line_parser parser{argc, argv};
     parser.options(od).positional(p);
-    boost::program_options::parsed_options parsed_options = parser.run();
-    boost::program_options::variables_map vm;
-    boost::program_options::store(parsed_options, vm);
-    boost::program_options::notify(vm);
+    parsed_options parsed_options = parser.run();
+    variables_map vm;
+    store(parsed_options, vm);
+    notify(vm);
+
     return vm;
 }

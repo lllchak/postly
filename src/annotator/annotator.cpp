@@ -1,4 +1,5 @@
 #include "annotator.h"
+
 #include "../detect/detect.h"
 #include "../embedder/impl/ft_embedder.h"
 #include "../nasty/nasty.h"

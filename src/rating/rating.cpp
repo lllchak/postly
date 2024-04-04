@@ -1,4 +1,5 @@
 #include "rating.h"
+
 #include "../utils.h"
 
 #include <fstream>

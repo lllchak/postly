@@ -1,4 +1,5 @@
 #include "single_linkage.h"
+
 #include "../../utils.h"
 
 #include <algorithm>

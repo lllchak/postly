@@ -1,4 +1,5 @@
 #include "cluster.h"
+
 #include "../rating/rating.h"
 #include "../utils.h"
 

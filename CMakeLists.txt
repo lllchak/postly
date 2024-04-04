@@ -78,6 +78,7 @@ set(SOURCE_FILES
     src/thread_pool/thread_pool.cpp
     src/rating/rating.cpp
     src/summarizer/summarizer.cpp
+    src/ranker/ranker.cpp
 )
 
 file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")

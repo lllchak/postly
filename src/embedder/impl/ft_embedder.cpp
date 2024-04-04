@@ -73,7 +73,6 @@ std::vector<float> TFTEmbedder::CalcEmbedding(const std::string& input) const {
     }
 
     if (n_words > 0) {
-        LOG_DEBUG("Processed " << n_words << " word(-s)");
         avgEmb.mul(1.0 / static_cast<float>(n_words));
     }
 

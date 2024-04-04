@@ -1,4 +1,5 @@
 #include "detect.h"
+
 #include "../document/document.h"
 #include "../utils.h"
 
