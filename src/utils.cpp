@@ -83,8 +83,8 @@ ParseOptions(const int argc, char** argv) {
         ("input", value<std::string>()->required(), "input")
         ("ndocs", value<std::size_t>()->default_value(-1), "ndocs")
         ("window_size", value<std::uint64_t>()->default_value(3600*8), "window_size")
-        ("save_not_news", value<bool>()->default_value(false), "save_not_news")
-        ("debug_mode", value<bool>()->default_value(false), "debug_mode")
+        ("save_not_news", bool_switch()->default_value(false), "save_not_news")
+        ("debug_mode", bool_switch()->default_value(false), "debug_mode")
     ;
 
     positional_options_description p;

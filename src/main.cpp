@@ -17,6 +17,32 @@
 #include <boost/program_options.hpp>
 #include <nlohmann_json/json.hpp>
 
+namespace {
+
+void BuildDebugInfo(nlohmann::json& object, const TWCluster& cluster) {
+    object["article_weights"] = nlohmann::json::array();
+    object["features"] = nlohmann::json::array();
+    object["weight"] = cluster.Weight.Weight;
+    object["importance"] = cluster.Weight.Importance;
+    object["best_time"] = cluster.Weight.BestTime;
+    object["age_penalty"] = cluster.Weight.AgePenalty;
+    object["average_us"] = cluster.Cluster.get().GetCountryShare().at("US");
+    object["w_average_us"] = cluster.Cluster.get().GetWeightedCountryShare().at("US");
+    object["average_gb"] = cluster.Cluster.get().GetCountryShare().at("GB");
+    object["w_average_gb"] = cluster.Cluster.get().GetWeightedCountryShare().at("GB");
+    object["average_in"] = cluster.Cluster.get().GetCountryShare().at("IN");
+    object["w_average_in"] = cluster.Cluster.get().GetWeightedCountryShare().at("IN");
+
+    for (const auto& weight : cluster.Cluster.get().GetDocWeights()) {
+        object["article_weights"].push_back(weight);
+    }
+    for (const auto& feature : cluster.Cluster.get().GetFeatures()) {
+        object["features"].push_back(feature);
+    }
+}
+
+}  // namespace
+
 int main(int argc, char** argv) {
     const auto vm = ParseOptions(argc, argv);
 
@@ -76,26 +102,7 @@ int main(int argc, char** argv) {
                 object["articles"].push_back(GetFilename(doc.Filename));
             }
             if (debugMode) {
-                object["article_weights"] = nlohmann::json::array();
-                object["features"] = nlohmann::json::array();
-                object["weight"] = cluster.Weight.Weight;
-                object["importance"] = cluster.Weight.Importance;
-                object["best_time"] = cluster.Weight.BestTime;
-                object["age_penalty"] = cluster.Weight.AgePenalty;
-                object["average_us"] = cluster.Cluster.get().GetCountryShare().at("US");
-                object["w_average_us"] = cluster.Cluster.get().GetWeightedCountryShare().at("US");
-                object["average_gb"] = cluster.Cluster.get().GetCountryShare().at("GB");
-                object["w_average_gb"] = cluster.Cluster.get().GetWeightedCountryShare().at("GB");
-                object["average_in"] = cluster.Cluster.get().GetCountryShare().at("IN");
-                object["w_average_in"] = cluster.Cluster.get().GetWeightedCountryShare().at("IN");
-
-                for (const auto& weight : cluster.Cluster.get().GetDocWeights()) {
-                    object["article_weights"].push_back(weight);
-                }
-                for (const auto& feature : cluster.Cluster.get().GetFeatures()) {
-                    object["features"].push_back(feature);
-                }
-
+                BuildDebugInfo(object, cluster);
             }
             rubricTop["threads"].push_back(object);
         }
