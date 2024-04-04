@@ -6,10 +6,10 @@ TSummarizer::TSummarizer(const std::string& configPath) {
     ::ParseConfig(configPath, Config);
 
     Rating = TRating(Config.pagerank_rating());
-    LOG_DEBUG("Pagerank rating loaded");
+    LOG("Pagerank rating loaded", ELogLevel::LL_INFO);
 
     AlexaRating = TAlexaRating(Config.alexa_rating());
-    LOG_DEBUG("Alexa rating loaded");
+    LOG("Alexa rating loaded", ELogLevel::LL_INFO);
 }
 
 void TSummarizer::Summarize(TClusters& clusters) const {

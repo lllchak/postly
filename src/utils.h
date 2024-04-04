@@ -2,6 +2,8 @@
 
 #include "enum.pb.h"
 
+#include <cassert>
+#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -10,6 +12,8 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <nlohmann_json/json.hpp>
+
+enum ELogLevel { LL_INFO, LL_DEBUG, LL_WARN, LL_ERROR };
 
 #define ENSURE(CONDITION, MESSAGE)               \
     do {                                         \
@@ -20,7 +24,27 @@
         }                                        \
     } while (false)
 
-#define LOG_DEBUG(x) std::cerr << x << std::endl;
+#define LOG(X, LEVEL)                                               \
+    do {                                                            \
+        std::string logLevel = " [ INFO ] ";                        \
+        switch (LEVEL) {                                            \
+            case ELogLevel::LL_DEBUG:                               \
+                logLevel = " [ DEBUG ] ";                           \
+                break;                                              \
+            case ELogLevel::LL_WARN:                                \
+                logLevel = " [ WARNING ] ";                         \
+                break;                                              \
+            case ELogLevel::LL_ERROR:                               \
+                logLevel = " [ ERROR ] ";                           \
+                break;                                              \
+            default:                                                \
+                assert(LEVEL == ELogLevel::LL_INFO);                \
+                break;                                              \
+        }                                                           \
+        auto t = std::chrono::system_clock::now();                  \
+        auto currTime = std::chrono::system_clock::to_time_t(t);    \
+        std::cerr << currTime << logLevel << X << std::endl;        \
+    } while (false)
 
 #define UNUSED(x) (void*)x
 
@@ -76,7 +100,7 @@ void ParseConfig(const std::string& fname, TConfig& config) {
         google::protobuf::io::FileInputStream fileInput(fileDesc);
         google::protobuf::TextFormat::Parse(&fileInput, &config);
     } catch (std::exception& e) {
-        LOG_DEBUG("Error parsing config " << e.what());
+        LOG("Error parsing config " << e.what(), ELogLevel::LL_ERROR);
     }
 }
 
@@ -90,7 +114,7 @@ T FromString(const std::string& s) {
     try {
         return nlohmann::json(s).get<T>();
     } catch (std::exception& e) {
-        LOG_DEBUG(e.what());
+        LOG(e.what(), ELogLevel::LL_WARN);
         return T();
     }
 }

@@ -17,7 +17,7 @@ std::string GetHostFromUrl(const std::string& url) {
             res_host = std::string(match[2].first, match[2].second);
         }
     } catch (...) {
-        LOG_DEBUG("Parsing host from " << url << " failed");
+        LOG("Parsing host from " << url << " failed", ELogLevel::LL_WARN);
         return res_host;
     }
 

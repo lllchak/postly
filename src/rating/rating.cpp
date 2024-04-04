@@ -16,7 +16,7 @@ void TRating::Load() {
     std::string line;
     std::ifstream rating(Config.filename());
     if (!rating.is_open()) {
-        LOG_DEBUG("Rating file is not available");
+        LOG("Rating file is not available", ELogLevel::LL_WARN);
         return;
     }
 
