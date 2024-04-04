@@ -18,7 +18,7 @@ struct TIndex {
 
 class TClusterer {
 public:
-    TClusterer(const std::string& configPath);
+    explicit TClusterer(const std::string& configPath);
 
     TIndex Cluster(std::vector<TDBDocument>&& docs) const;
 

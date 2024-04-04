@@ -80,7 +80,7 @@ message TClustererConfig {
 }
 
 message TSummarizerConfig {
-    required string hosts_rating = 1;
+    required string pagerank_rating = 1;
     required string alexa_rating = 2;
 }
 

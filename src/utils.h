@@ -103,3 +103,13 @@ void FilesFromDir(const std::string& dir,
 
 boost::program_options::variables_map
 ParseOptions(const int argc, char** argv);
+
+template<typename T>
+T Sigmoid(const T x) {
+    if (x >= 0.0f) {
+        T z = exp(-x);
+        return 1.0f / (1.0f + z);
+    }
+    T z = exp(x);
+    return z / (1.0f + z);
+}

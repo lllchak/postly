@@ -1,2 +1,2 @@
-filename: models/pagerank_rating.txt
+filename: "models/pagerank_rating.txt"
 unk_rating: 0.000015

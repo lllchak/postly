@@ -1,0 +1,2 @@
+pagerank_rating: "configs/rating/pagerank.pbtxt"
+alexa_rating: "configs/rating/alexa.pbtxt"

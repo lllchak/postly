@@ -77,6 +77,7 @@ set(SOURCE_FILES
     src/embedder/impl/ft_embedder.cpp
     src/thread_pool/thread_pool.cpp
     src/rating/rating.cpp
+    src/summarizer/summarizer.cpp
 )
 
 file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")
