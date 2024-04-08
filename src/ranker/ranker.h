@@ -18,7 +18,6 @@ struct TWeight {
     std::size_t ClusterSize = 0;
 };
 
-
 struct TWCluster {
     std::reference_wrapper<const TCluster> Cluster;
     TWeight Weight;
