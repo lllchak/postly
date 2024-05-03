@@ -21,7 +21,7 @@ public:
     METHOD_LIST_END
 
     void Init(
-        const THotState<TClusterIndex>* index,
+        const TAtomic<TIndex>* index,
         rocksdb::DB* db,
         std::unique_ptr<TAnnotator> annotator,
         std::unique_ptr<TRanker> ranker);
@@ -47,13 +47,13 @@ public:
         const std::string& fname) const;
 
 private:
-    bool IsNotReady(
+    bool IsReady(
         std::function<void(const drogon::HttpResponsePtr&)> &&callback) const;
-    std::optional<TDbDocument> ParseDbDocFromReq(
+    std::optional<TDBDocument> GetDBDocFromReq(
         const drogon::HttpRequestPtr& req,
         const std::string& fname) const;
-    bool IndexDbDoc(
-        const TDbDocument& dbDoc,
+    bool IndexDBDoc(
+        const TDBDocument& doc,
         const std::string& fname) const;
     drogon::HttpStatusCode GetCode(
         const std::string& fname,
@@ -68,4 +68,4 @@ private:
     rocksdb::DB* DB;
     std::unique_ptr<TAnnotator> Annotator;
     std::unique_ptr<TRanker> Ranker;
-}
+};

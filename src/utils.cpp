@@ -17,7 +17,7 @@ std::string GetHostFromUrl(const std::string& url) {
             res_host = std::string(match[2].first, match[2].second);
         }
     } catch (...) {
-        LOG("Parsing host from " << url << " failed", ELogLevel::LL_WARN);
+        LLOG("Parsing host from " << url << " failed", ELogLevel::LL_WARN);
         return res_host;
     }
 
@@ -80,6 +80,7 @@ ParseOptions(const int argc, char** argv) {
 
     options_description od("options");
     od.add_options()
+        ("mode", value<std::string>()->required(), "mode")
         ("input", value<std::string>()->required(), "input")
         ("ndocs", value<std::size_t>()->default_value(-1), "ndocs")
         ("window_size", value<std::uint64_t>()->default_value(3600*8), "window_size")
@@ -88,6 +89,7 @@ ParseOptions(const int argc, char** argv) {
     ;
 
     positional_options_description p;
+    p.add("mode", 1);
     p.add("input", 1);
 
     command_line_parser parser{argc, argv};

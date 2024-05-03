@@ -24,7 +24,7 @@ enum ELogLevel { LL_INFO, LL_DEBUG, LL_WARN, LL_ERROR };
         }                                        \
     } while (false)
 
-#define LOG(X, LEVEL)                                               \
+#define LLOG(X, LEVEL)                                               \
     do {                                                            \
         std::string logLevel = " [ INFO ] ";                        \
         switch (LEVEL) {                                            \
@@ -100,7 +100,7 @@ void ParseConfig(const std::string& fname, TConfig& config) {
         google::protobuf::io::FileInputStream fileInput(fileDesc);
         google::protobuf::TextFormat::Parse(&fileInput, &config);
     } catch (std::exception& e) {
-        LOG("Error parsing config " << e.what(), ELogLevel::LL_ERROR);
+        LLOG("Error parsing config " << e.what(), ELogLevel::LL_ERROR);
     }
 }
 
@@ -114,7 +114,7 @@ T FromString(const std::string& s) {
     try {
         return nlohmann::json(s).get<T>();
     } catch (std::exception& e) {
-        LOG(e.what(), ELogLevel::LL_WARN);
+        LLOG(e.what(), ELogLevel::LL_WARN);
         return T();
     }
 }

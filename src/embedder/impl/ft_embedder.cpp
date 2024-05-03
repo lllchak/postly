@@ -19,11 +19,11 @@ TFTEmbedder::TFTEmbedder(
 {
     assert(!embeddingModelPath.empty());
     EmbeddingModel.loadModel(embeddingModelPath);
-    LOG("FastText model loaded [" << embeddingModelPath << ']', ELogLevel::LL_INFO);
+    LLOG("FastText model loaded [" << embeddingModelPath << ']', ELogLevel::LL_INFO);
 
     if (!modelPath.empty()) {
         Model = torch::jit::load(modelPath);
-        LOG("Torch model loaded [" << modelPath << ']', ELogLevel::LL_INFO);
+        LLOG("Torch model loaded [" << modelPath << ']', ELogLevel::LL_INFO);
     }
 }
 

@@ -35,7 +35,7 @@ TAnnotator::TAnnotator(const std::string& configPath,
     ComputeNasty |= Config.compute_nasty();
 
     LangDetector.loadModel(Config.lang_detect());
-    LOG("FastText language detector loaded", ELogLevel::LL_INFO);
+    LLOG("FastText language detector loaded", ELogLevel::LL_INFO);
 
     for (const std::string& language : langs) {
         postly::ELanguage lang = FromString<postly::ELanguage>(language);
@@ -48,7 +48,7 @@ TAnnotator::TAnnotator(const std::string& configPath,
             continue;
         }
         CategDetectors[lang].loadModel(config.path());
-        LOG("FastText:lang=" << ToString(lang) << " category model loaded", ELogLevel::LL_INFO);
+        LLOG("FastText:lang=" << ToString(lang) << " category model loaded", ELogLevel::LL_INFO);
     }
 
     for (const auto& config : Config.embedders()) {
@@ -149,7 +149,7 @@ std::optional<TDocument> TAnnotator::ParseHTML(const std::string& path) const {
     try {
         doc.FromHTML(path.c_str(), Config.parse_links(), Config.shrink_text(), Config.max_words());
     } catch (...) {
-        LOG("Bad HTML [" << path << ']', ELogLevel::LL_WARN);
+        LLOG("Bad HTML [" << path << ']', ELogLevel::LL_WARN);
         return std::nullopt;
     }
     return doc;
@@ -161,7 +161,7 @@ std::optional<TDocument> TAnnotator::ParseHTML(const tinyxml2::XMLDocument& html
     try {
         doc.FromHTML(html, filename, Config.parse_links(), Config.shrink_text(), Config.max_words());
     } catch (...) {
-        LOG("Bad HTML [" << filename << ']', ELogLevel::LL_WARN);
+        LLOG("Bad HTML [" << filename << ']', ELogLevel::LL_WARN);
         return std::nullopt;
     }
     return doc;

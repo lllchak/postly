@@ -2,7 +2,7 @@
 
 #include <memory>
 
-template<typenmae T>
+template<typename T>
 class TAtomic {
 public:
     TAtomic() = default;
@@ -17,4 +17,4 @@ public:
 
 private:
     std::shared_ptr<T> State;
-}
+};

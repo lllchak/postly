@@ -68,17 +68,20 @@ set(SOURCE_FILES
     src/annotator/annotator.cpp
     src/cluster/cluster.cpp
     src/clustering/impl/single_linkage.cpp
+    src/clustering/server/index.cpp
     src/clustering/clusterer.cpp
+    src/controller/controller.cpp
     src/detect/detect.cpp
     src/document/document.cpp
     src/document/impl/db_document.cpp
-    src/nasty/nasty.cpp
-    src/utils.cpp
     src/embedder/impl/ft_embedder.cpp
-    src/thread_pool/thread_pool.cpp
+    src/nasty/nasty.cpp
     src/rating/rating.cpp
-    src/summarizer/summarizer.cpp
     src/ranker/ranker.cpp
+    src/server/server.cpp
+    src/summarizer/summarizer.cpp
+    src/thread_pool/thread_pool.cpp
+    src/utils.cpp
 )
 
 file(GLOB PROTO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/proto/*.proto")

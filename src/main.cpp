@@ -6,8 +6,9 @@
 #include "document/impl/db_document.h"
 #include "document/document.h"
 #include "embedder/impl/ft_embedder.h"
-#include "summarizer/summarizer.h"
 #include "ranker/ranker.h"
+#include "server/server.h"
+#include "summarizer/summarizer.h"
 #include "utils.h"
 
 #include <iostream>
@@ -41,10 +42,34 @@ void BuildDebugInfo(nlohmann::json& object, const TWCluster& cluster) {
     }
 }
 
+int RunServer(const std::string& configPath,
+              const std::string& port) {
+    TServer server(configPath);
+
+    const auto parsePort = [](const std::string& s) -> std::optional<std::uint16_t> {
+        try {
+            return boost::lexical_cast<std::uint16_t>(s);
+        } catch (std::exception& e) {
+            return std::nullopt;
+        }
+    };
+
+    const std::optional<std::uint16_t> p = parsePort(port);
+    if (!p.has_value()) {
+        return -1;
+    }
+
+    return server.Run(p.value());
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     const auto vm = ParseOptions(argc, argv);
+
+    if (vm["mode"].as<std::string>() == "server") {
+        RunServer("configs/server.pbtxt", vm["input"].as<std::string>());
+    }
 
     std::vector<std::string> langs = {"ru", "en"};
     TAnnotator annotator = TAnnotator("configs/annotator.pbtxt", langs, "top");
