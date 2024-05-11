@@ -15,6 +15,7 @@
 #include <optional>
 #include <vector>
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/program_options.hpp>
 #include <nlohmann_json/json.hpp>
 
@@ -104,7 +105,7 @@ int main(int argc, char** argv) {
         std::map<std::string, std::vector<std::string>> langToFiles;
 
         for (const TDBDocument& doc : dbDocs) {
-            langToFiles[nlohmann::json(doc.Language)].push_back(GetFilename(doc.FileName));
+            langToFiles[nlohmann::json(doc.Language)].push_back(GetFilename(doc.Filename));
         }
         for (const auto& pair : langToFiles) {
             const std::string& language = pair.first;
@@ -126,7 +127,7 @@ int main(int argc, char** argv) {
             if (category == postly::NC_UNDEFINED || (category == postly::NC_NOT_NEWS && !saveNotNews)) {
                 continue;
             }
-            catToFiles[static_cast<size_t>(category)].push_back(CleanFileName(doc.FileName));
+            catToFiles[static_cast<size_t>(category)].push_back(GetFilename(doc.Filename));
         }
         for (size_t i = 0; i < postly::ECategory_ARRAYSIZE; i++) {
             postly::ECategory category = static_cast<postly::ECategory>(i);
@@ -151,11 +152,11 @@ int main(int argc, char** argv) {
 
     if (mode == "threads") {
         nlohmann::json outputJson = nlohmann::json::array();
-        for (const auto& [language, langClusters]: clusterIndex.Clusters) {
+        for (const auto& [language, langClusters]: clusteringIndex.Clusters) {
             for (const auto& cluster : langClusters) {
                 nlohmann::json files = nlohmann::json::array();
                 for (const TDBDocument& doc : cluster.GetDocuments()) {
-                    files.push_back(GetFilename(doc.FileName));
+                    files.push_back(GetFilename(doc.Filename));
                 }
                 nlohmann::json object = {
                     {"title", cluster.GetTitle()},
