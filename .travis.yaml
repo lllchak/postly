@@ -1,0 +1,76 @@
+os: linux
+dist: bionic
+language: cpp
+
+branches:
+  only:
+  - master
+  - dev
+
+addons:
+  apt:
+    update: true
+    packages:
+      - cmake
+      - libboost-all-dev
+      - python3-pip
+      - python3-setuptools
+      - python3-dev
+      - python3-wheel
+      - python3-numpy
+      - python3-scipy
+      - libjsoncpp-dev
+      - uuid-dev
+      - protobuf-compiler
+      - libprotobuf-dev
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  - BUILD_TYPE=Release
+
+before_script:
+  - sudo add-apt-repository -y ppa:ondrej/php
+  - sudo apt-get -q update
+  - sudo apt-get install -y php7.4 php7.4-curl
+  - git lfs pull
+  - python3 -m pip install wheel
+  - python3 -m pip install cython
+  - python3 -m pip install -r viewer/requirements.txt
+  - wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.5.0%2Bcpu.zip
+  - unzip libtorch-cxx11-abi-shared-with-deps-1.5.0+cpu.zip
+  - bash download_models.sh
+  - wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/shunit2/shunit2-2.1.6.tgz -O - | tar -xz
+  - wget https://data-static.usercontent.dev/dc-check.tar.gz -O - | tar -xz
+  - wget https://www.dropbox.com/s/p2eg8cuyf8dvez5/ru_cat_v4_test_data.json -O ru_cat_data.json
+  - wget https://www.dropbox.com/s/ur7jhiyi22tmzxd/ru_cat_v4_test_annot.json -O ru_cat_target.json
+  - wget https://www.dropbox.com/s/qrpguxcqcm5l3hq/en_cat_v3_test_data.json -O en_cat_data.json
+  - wget https://www.dropbox.com/s/q2b5vcoxm8gilma/en_cat_v3_test_annot.json -O en_cat_target.json
+  - wget https://www.dropbox.com/s/rrkxdnml6ukql8j/ru_clustering_0517.tsv -O ru_threads_target.tsv
+  - wget https://www.dropbox.com/s/y3j9mxzpad8rkku/en_ru_0502_0503.json.tar.gz -O - | tar -xz --to-stdout en_ru_0502_0503.json > demo_data.json
+  - wget https://www.dropbox.com/s/a9b7rcxnfbmvhej/ru_tg_0517.jsonl.tar.gz -O - | tar -xz --to-stdout ru_tg_0517.jsonl > ru_clustering_data.jsonl
+  - wget https://www.dropbox.com/s/2ot2qkimp5i2zof/html_sample.tar.gz -O - | tar -xz
+  - export LD_LIBRARY_PATH=$(if [[ $TRAVIS_COMPILER == "clang" ]]; then echo -n /usr/local/clang/lib:$LD_LIBRARY_PATH; fi)
+
+script:
+  - mkdir build
+  - cd build
+  - Torch_DIR="../libtorch" cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
+  - make -j4
+  - cd ..
+  - mkdir output
+  - bash build_viewer.sh viewer/templates output "03 May" demo_data.json ru_cat_data.json ru_cat_target.json en_cat_data.json en_cat_target.json ru_clustering_data.jsonl ru_threads_target.tsv
+  - php7.4 dc-check.php build/poslty all 8000 html_sample
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GH_TOKEN
+  keep_history: false
+  local_dir: output
+  verbose: true
+  on:
+    branch: master
+    condition: $TRAVIS_COMPILER = clang

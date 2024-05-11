@@ -82,10 +82,17 @@ ParseOptions(const int argc, char** argv) {
     od.add_options()
         ("mode", value<std::string>()->required(), "mode")
         ("input", value<std::string>()->required(), "input")
+        ("server_config", po::value<std::string>()->default_value("../configs/server.pbtxt"), "server_config")
+        ("annotator_config", po::value<std::string>()->default_value("../configs/annotator.pbtxt"), "annotator_config")
+        ("clusterer_config", po::value<std::string>()->default_value("../configs/clusterer.pbtxt"), "clusterer_config")
+        ("summarizer_config", po::value<std::string>()->default_value("../configs/summarizer.pbtxt"), "summarizer_config")
+        ("ranker_config", po::value<std::string>()->default_value("../configs/ranker.pbtxt"), "ranker_config")
+        ("languages", po::value<std::vector<std::string>>()->multitoken()->default_value(std::vector<std::string>{"ru", "en"}, "ru en"), "languages")
         ("ndocs", value<std::size_t>()->default_value(-1), "ndocs")
         ("window_size", value<std::uint64_t>()->default_value(3600*8), "window_size")
         ("save_not_news", bool_switch()->default_value(false), "save_not_news")
         ("debug_mode", bool_switch()->default_value(false), "debug_mode")
+        ("print_top_debug_info", po::bool_switch()->default_value(false), "print_top_debug_info")
     ;
 
     positional_options_description p;

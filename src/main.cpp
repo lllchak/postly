@@ -67,24 +67,106 @@ int RunServer(const std::string& configPath,
 int main(int argc, char** argv) {
     const auto vm = ParseOptions(argc, argv);
 
-    if (vm["mode"].as<std::string>() == "server") {
-        RunServer("configs/server.pbtxt", vm["input"].as<std::string>());
+    std::string mode = vm["mode"].as<std::string>();
+
+    if (mode == "server") {
+        RunServer(vm["server_config"].as<std::string>(), vm["input"].as<std::string>());
     }
 
-    std::vector<std::string> langs = {"ru", "en"};
-    TAnnotator annotator = TAnnotator("configs/annotator.pbtxt", langs, "top");
-    TClusterer clusterer = TClusterer("configs/clusterer.pbtxt");
-    TSummarizer summarizer = TSummarizer("configs/summarizer.pbtxt");
-    TRanker ranker = TRanker("configs/ranker.pbtxt");
+    std::vector<std::string> langs = vm["languages"].as<std::vector<std::string>>();
+    TAnnotator annotator = TAnnotator(vm["annotator_config"].as<std::string>(), langs, mode);
+    TClusterer clusterer = TClusterer(vm["clusterer_config"].as<std::string>());
+    TSummarizer summarizer = TSummarizer(vm["summmarizer_config"].as<std::string>());
+    TRanker ranker = TRanker(vm["ranker_config"].as<std::string>());
 
     std::vector<std::string> files;
-    FilesFromDir(vm["input"].as<std::string>(), files, vm["ndocs"].as<std::size_t>());
+    std::string input = vm["input"].as<std::string>();
+    postly::EInputFormat inputFormat = postly::IF_UNDEFINED;
+    std::vector<std::string> fileNames;
+    if (boost::algorithm::ends_with(input, ".json")) {
+        inputFormat = postly::IF_JSON;
+        fileNames.push_back(input);
+    } else if (boost::algorithm::ends_with(input, ".jsonl")) {
+        inputFormat = postly::IF_JSONL;
+        fileNames.push_back(input);
+    } else {
+        inputFormat = postly::IF_HTML;
+        int nDocs = vm["ndocs"].as<int>();
+        FilesFromDir(input, fileNames, nDocs);
+    }
     const bool saveNotNews = vm["save_not_news"].as<bool>();
     const bool debugMode = vm["debug_mode"].as<bool>();
 
-    std::vector<TDBDocument> dbDocs = annotator.ProcessAll(files, postly::IF_HTML);
+    std::vector<TDBDocument> dbDocs = annotator.ProcessAll(files, inputFormat);
+
+    if (mode == "languages") {
+        nlohmann::json outputJson = nlohmann::json::array();
+        std::map<std::string, std::vector<std::string>> langToFiles;
+
+        for (const TDBDocument& doc : dbDocs) {
+            langToFiles[nlohmann::json(doc.Language)].push_back(GetFilename(doc.FileName));
+        }
+        for (const auto& pair : langToFiles) {
+            const std::string& language = pair.first;
+            const std::vector<std::string>& files = pair.second;
+            nlohmann::json object = {
+                {"lang_code", language},
+                {"articles", files}
+            };
+            outputJson.push_back(object);
+        }
+        std::cout << outputJson.dump(4) << std::endl;
+        return 0;
+    } else if (mode == "categories") {
+        nlohmann::json outputJson = nlohmann::json::array();
+        std::vector<std::vector<std::string>> catToFiles(postly::ECategory_ARRAYSIZE);
+
+        for (const TDBDocument& doc : dbDocs) {
+            postly::ECategory category = doc.Category;
+            if (category == postly::NC_UNDEFINED || (category == postly::NC_NOT_NEWS && !saveNotNews)) {
+                continue;
+            }
+            catToFiles[static_cast<size_t>(category)].push_back(CleanFileName(doc.FileName));
+        }
+        for (size_t i = 0; i < postly::ECategory_ARRAYSIZE; i++) {
+            postly::ECategory category = static_cast<postly::ECategory>(i);
+            if (category == postly::NC_UNDEFINED || category == postly::NC_ANY) {
+                continue;
+            }
+            if (!saveNotNews && category == postly::NC_NOT_NEWS) {
+                continue;
+            }
+            const std::vector<std::string>& files = catToFiles[i];
+            nlohmann::json object = {
+                {"category", category},
+                {"articles", files}
+            };
+            outputJson.push_back(object);
+        }
+        std::cout << outputJson.dump(4) << std::endl;
+        return 0;
+    }
 
     TIndex clusteringIndex = clusterer.Cluster(std::move(dbDocs));
+
+    if (mode == "threads") {
+        nlohmann::json outputJson = nlohmann::json::array();
+        for (const auto& [language, langClusters]: clusterIndex.Clusters) {
+            for (const auto& cluster : langClusters) {
+                nlohmann::json files = nlohmann::json::array();
+                for (const TDBDocument& doc : cluster.GetDocuments()) {
+                    files.push_back(GetFilename(doc.FileName));
+                }
+                nlohmann::json object = {
+                    {"title", cluster.GetTitle()},
+                    {"articles", files}
+                };
+                outputJson.push_back(object);
+            }
+        }
+        std::cout << outputJson.dump(4) << std::endl;
+        return 0;
+    }
 
     TClusters allClusters;
     for (const auto& lang: {postly::NL_EN, postly::NL_RU}) {

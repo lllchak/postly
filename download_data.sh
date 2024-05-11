@@ -17,11 +17,11 @@ data_test_list=(
     "https://data-static.usercontent.dev/DataClusteringSample1117.tar.gz"
 )
 
-mkdir -p data/data
-for url in ${data_train_list[@]}; do
-    echo $url
-    wget -qO - $url | tar -xz -C data/data
-done
+# mkdir -p data/data
+# for url in ${data_train_list[@]}; do
+#     echo $url
+#     wget -qO - $url | tar -xz -C data/data
+# done
 
 mkdir -p data/data_test
 for url in ${data_test_list[@]}; do
