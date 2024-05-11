@@ -149,7 +149,6 @@ std::optional<TDocument> TAnnotator::ParseHTML(const std::string& path) const {
     try {
         doc.FromHTML(path.c_str(), Config.parse_links(), Config.shrink_text(), Config.max_words());
     } catch (...) {
-        LLOG("Bad HTML [" << path << ']', ELogLevel::LL_WARN);
         return std::nullopt;
     }
     return doc;
@@ -161,7 +160,6 @@ std::optional<TDocument> TAnnotator::ParseHTML(const tinyxml2::XMLDocument& html
     try {
         doc.FromHTML(html, filename, Config.parse_links(), Config.shrink_text(), Config.max_words());
     } catch (...) {
-        LLOG("Bad HTML [" << filename << ']', ELogLevel::LL_WARN);
         return std::nullopt;
     }
     return doc;

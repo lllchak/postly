@@ -16,6 +16,8 @@
 
 namespace {
 
+using TCallback = std::function<void(const drogon::HttpResponsePtr&)>;
+
 std::optional<std::uint32_t> GetOpenFileLimit() {
     rlimit limit;
     if (getrlimit(RLIMIT_NOFILE, &limit) == 0) {
@@ -33,14 +35,14 @@ void CheckIO(const postly::TServerConfig& config) {
     if (config.max_connection_num() >= limit.value()) {
         LLOG(
             "ulimit -n is smaller than the \"max_connection_num\" option; overflow is possible",
-            ELogLevel::LL_ERROR
+            ELogLevel::LL_WARN
         );
     }
 
     if (config.db_max_open_files() >= limit.value()) {
         LLOG(
             "ulimit -n is smaller than the \"db_max_open_files\" option; overflow is possible",
-            ELogLevel::LL_ERROR
+            ELogLevel::LL_WARN
         );
     }
 }
@@ -79,7 +81,7 @@ TServer::TServer(const std::string& configPath) {
 
 int TServer::Run(const std::uint16_t port) {
     CheckIO(Config);
-    LLOG("Parsed correct server config", ELogLevel::LL_INFO);
+    LLOG("Parsed server config", ELogLevel::LL_INFO);
 
     LLOG("Creating database", ELogLevel::LL_DEBUG);
     std::unique_ptr<rocksdb::DB> db = CreateDB(Config);
@@ -105,27 +107,12 @@ int TServer::Run(const std::uint16_t port) {
     auto controllerPtr = std::make_shared<TController>();
     drogon::app().registerController(controllerPtr);
 
-    LLOG("Launching clustering", ELogLevel::LL_DEBUG);
     TAtomic<TIndex> index;
+    drogon::DrClassMap::getSingleInstance<TController>()->Init(&index, db.get(), std::move(annotator), std::move(ranker));
 
-    auto initContoller = [&, annotator=std::move(annotator)]() mutable {
-        drogon::DrClassMap::getSingleInstance<TController>()->Init(&index, db.get(), std::move(annotator), std::move(ranker));
-    };
-
-    std::thread clusteringThread([&, sleepMs=Config.clusterer_sleep()]() {
-        bool firstRun = true;
-        while (true) {
-            TIndex newIndex = serverIndex.Build();
-            index.Set(std::make_shared<TIndex>(std::move(newIndex)));
-
-            if (firstRun) {
-                initContoller();
-                firstRun = false;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(sleepMs));
-        }
-    });
+    for (const auto& el : drogon::app().getHandlersInfo()) {
+        LLOG(std::get<0>(el) << ' ' << std::get<1>(el) << ' ' << std::get<2>(el), ELogLevel::LL_DEBUG);
+    }
 
     drogon::app().run();
 

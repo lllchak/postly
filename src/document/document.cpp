@@ -103,7 +103,7 @@ void TDocument::FromHTML(const char* filename,
                          bool shrinkText,
                          std::size_t maxWords) {
     if (!boost::filesystem::exists(filename)) {
-        throw std::runtime_error("HTML file not found");
+        LLOG("HTML file not found", ELogLevel::LL_WARN);
     }
     tinyxml2::XMLDocument originalDoc;
     originalDoc.LoadFile(filename);
@@ -120,15 +120,15 @@ void TDocument::FromHTML(const tinyxml2::XMLDocument& originalDoc,
 
     const tinyxml2::XMLElement* htmlElement = originalDoc.FirstChildElement("html");
     if (!htmlElement) {
-        throw std::runtime_error("Parser error: no html tag");
+        LLOG("Parser error: no html tag", ELogLevel::LL_WARN);
     }
     const tinyxml2::XMLElement* headElement = htmlElement->FirstChildElement("head");
     if (!headElement) {
-        throw std::runtime_error("Parser error: no head");
+        LLOG("Parser error: no head", ELogLevel::LL_WARN);
     }
     const tinyxml2::XMLElement* metaElement = headElement->FirstChildElement("meta");
     if (!metaElement) {
-        throw std::runtime_error("Parser error: no meta");
+        LLOG("Parser error: no meta", ELogLevel::LL_WARN);
     }
     while (metaElement != 0) {
         const char* property = metaElement->Attribute("property");
@@ -156,11 +156,11 @@ void TDocument::FromHTML(const tinyxml2::XMLDocument& originalDoc,
     }
     const tinyxml2::XMLElement* bodyElement = htmlElement->FirstChildElement("body");
     if (!bodyElement) {
-        throw std::runtime_error("Parser error: no body");
+        LLOG("Parser error: no body", ELogLevel::LL_WARN);
     }
     const tinyxml2::XMLElement* articleElement = bodyElement->FirstChildElement("article");
     if (!articleElement) {
-        throw std::runtime_error("Parser error: no article");
+        LLOG("Parser error: no article", ELogLevel::LL_WARN);
     }
     const tinyxml2::XMLElement* pElement = articleElement->FirstChildElement("p");
     {

@@ -18,20 +18,24 @@ void BuildSimpleResponse(std::function<void(const drogon::HttpResponsePtr&)>&& c
     callback(resp);
 }
 
-std::optional<std::int64_t> GetTtlHeader(const std::string& value) try {
-    if (value == "no-cache") {
-        return -1;
+std::optional<std::int64_t> GetTtlHeader(const std::string& value) {
+    try {
+        if (value == "no-cache") {
+            return -1;
+        }
+        static constexpr std::size_t lenPrefix = std::char_traits<char>::length("max-age=");
+        return static_cast<std::int64_t>(std::stoi(value.substr(lenPrefix)));
+    } catch (const std::exception& e) {
+        return std::nullopt;
     }
-    static constexpr std::size_t lenPrefix = std::char_traits<char>::length("max-age=");
-    return static_cast<std::int64_t>(std::stoi(value.substr(lenPrefix)));
-} catch (const std::exception& e) {
-    return std::nullopt;
 }
 
-std::optional<std::int64_t> GetPeriod(const std::string& value) try {
-    return static_cast<std::int64_t>(std::stoi(value));
-} catch (const std::exception& e) {
-    return std::nullopt;
+std::optional<std::int64_t> GetPeriod(const std::string& value) {
+    try {
+        return static_cast<std::int64_t>(std::stoi(value));
+    } catch (const std::exception& e) {
+        return std::nullopt;
+    }
 }
 
 std::optional<postly::ELanguage> GetLang(const std::string& value) {
@@ -71,8 +75,8 @@ void TController::Init(const TAtomic<TIndex>* index,
     Initialized.store(true, std::memory_order_release);
 }
 
-bool
-TController::IsReady(std::function<void(const drogon::HttpResponsePtr&)> &&callback) const {
+bool TController::IsReady(std::function<void(const drogon::HttpResponsePtr &)> &&callback) const
+{
     if (!Initialized.load(std::memory_order_acquire)) {
         BuildSimpleResponse(std::move(callback), drogon::k503ServiceUnavailable);
         return false;
@@ -81,15 +85,8 @@ TController::IsReady(std::function<void(const drogon::HttpResponsePtr&)> &&callb
 }
 
 std::optional<TDBDocument>
-TController::GetDBDocFromReq(const drogon::HttpRequestPtr& req,
-                             const std::string& fname) const {
-    tinyxml2::XMLDocument html;
-
-    const tinyxml2::XMLError code = html.Parse(req->bodyData(), req->bodyLength());
-    if (code != tinyxml2::XML_SUCCESS) {
-        return std::nullopt;
-    }
-    return Annotator->ProcessHTML(html, fname);
+TController::GetDBDocFromReq(const std::string& fname) const {
+    return Annotator->ProcessHTML(fname);
 }
 
 bool TController::IndexDBDoc(const TDBDocument& doc,
@@ -125,11 +122,12 @@ void TController::Put(const drogon::HttpRequestPtr& req,
 
     const std::optional<std::int64_t> ttl = GetTtlHeader(req->getHeader("Cache-Control"));
     if (!ttl.has_value() || ttl.value() == -1) {
+        LLOG("Request TTL is empty", ELogLevel::LL_ERROR);
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;
     }
 
-    std::optional<TDBDocument> doc = GetDBDocFromReq(req, fname);
+    std::optional<TDBDocument> doc = GetDBDocFromReq(fname);
     if (!doc.has_value()) {
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;
@@ -182,14 +180,18 @@ void TController::Threads(const drogon::HttpRequestPtr& req,
     const std::optional<postly::ELanguage> lang = GetLang(req->getParameter("lang_code"));
     const std::optional<postly::ECategory> category = GetCategory(req->getParameter("category"));
 
-    if (!period || !lang || !category) {
+    if (!(period.has_value() && lang.has_value() && category.has_value())) {
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;
     }
 
     const std::shared_ptr<TIndex> index = Index->Get();
 
-    const auto& clusters = index->Clusters.at(lang.value());
+    TClusters clusters;
+    if (index->Clusters.count(lang.value())) {
+        clusters = index->Clusters.at(lang.value());
+    }
+
     const std::uint64_t fromTimestamp =
         index->MaxTimestamp > period.value() ? index->MaxTimestamp - period.value() : 0;
 
@@ -234,12 +236,14 @@ void TController::Get(const drogon::HttpRequestPtr& req,
         postly::TDocumentProto doc;
         const auto suc = doc.ParseFromString(serializedDoc);
         ret["parsed"] = suc;
-        ret["title"] = doc.title();
-        ret["lang"] = doc.language();
-        ret["category"] = doc.category();
-        ret["pubtime"] = Json::UInt64(doc.pub_time());
-        ret["fetchtime"] = Json::UInt64(doc.fetch_time());
-        ret["ttl"] = Json::UInt64(doc.ttl());
+        if (suc) {
+            ret["title"] = doc.title();
+            ret["lang"] = doc.language();
+            ret["category"] = doc.category();
+            ret["pubtime"] = Json::UInt64(doc.pub_time());
+            ret["fetchtime"] = Json::UInt64(doc.fetch_time());
+            ret["ttl"] = Json::UInt64(doc.ttl());
+        }
     }
 
     auto resp = drogon::HttpResponse::newHttpJsonResponse(ret);
@@ -259,7 +263,7 @@ void TController::Post(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    std::optional<TDBDocument> dbDoc = GetDBDocFromReq(req, fname);
+    std::optional<TDBDocument> dbDoc = GetDBDocFromReq(fname);
     if (!dbDoc) {
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;
@@ -279,7 +283,7 @@ void TController::Post(const drogon::HttpRequestPtr& req,
     }
 
     Json::Value json(Json::objectValue);
-    json["lang_code"] = dbDoc->HasSupportedLanguage() ? ToString(dbDoc->Language) : Json::Value::null ;
+    json["lang_code"] = dbDoc->HasSupportedLanguage() ? ToString(dbDoc->Language) : Json::Value::null;
     json["is_news"] = dbDoc->Category != postly::NC_UNDEFINED ? dbDoc->IsNews() : Json::Value::null;
     json["is_indexed"] = isIndexed;
     Json::Value categories(Json::arrayValue);
@@ -290,5 +294,12 @@ void TController::Post(const drogon::HttpRequestPtr& req,
 
     auto resp = drogon::HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(code);
+    callback(resp);
+}
+
+void TController::Ping(const drogon::HttpRequestPtr& req,
+                       std::function<void(const drogon::HttpResponsePtr&)>&& callback) const {
+    auto resp = drogon::HttpResponse::newHttpResponse();
+    resp->setStatusCode(drogon::k200OK);
     callback(resp);
 }

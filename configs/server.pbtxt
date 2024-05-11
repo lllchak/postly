@@ -1,12 +1,12 @@
-threads: 4
-max_connection_num: 256
+threads: 1
+max_connection_num: 32
 max_connection_num_per_ip: 0
 idle_connection_timeout: 60
 keepalive_requests_number: 0
 pipelining_requests_number: 0
 db_path: "../data/sample.db"
 db_fail_if_missing: 0
-db_max_open_files: 256
+db_max_open_files: 32
 clusterer_sleep: 5000
 
 annotator_config_path: "configs/annotator.pbtxt"

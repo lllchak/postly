@@ -31,8 +31,8 @@ GetDocs(rocksdb::DB* db) {
         }
 
         TDBDocument doc;
-        const bool succes = TDBDocument::ParseFromArray(value.data(), value.size(), &doc);
-        if (!succes) {
+        const bool success = TDBDocument::ParseFromArray(value.data(), value.size(), &doc);
+        if (!success) {
             LLOG("Bad document in db: " << iter->key().ToString(), ELogLevel::LL_DEBUG);
             continue;
         }

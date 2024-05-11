@@ -2,6 +2,8 @@
 
 #include "config.pb.h"
 
+#include <drogon/drogon.h>
+
 #include <string>
 
 class TServer {
