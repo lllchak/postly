@@ -30,6 +30,9 @@ compiler:
 env:
   - BUILD_TYPE=Release
 
+before_install:
+  - git submodule update --init --recursive
+
 before_script:
   - sudo add-apt-repository -y ppa:ondrej/php
   - sudo apt-get -q update
