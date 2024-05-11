@@ -5,7 +5,6 @@ language: cpp
 branches:
   only:
   - master
-  - dev
 
 addons:
   apt:
