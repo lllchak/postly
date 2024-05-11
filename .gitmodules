@@ -1,0 +1,15 @@
+[submodule "lib/fasttext"]
+	path = lib/fasttext
+	url = https://github.com/facebookresearch/fastText/
+[submodule "lib/eigen"]
+	path = lib/eigen
+	url = https://github.com/eigenteam/eigen-git-mirror
+[submodule "lib/onmt_tokenizer"]
+	path = lib/onmt_tokenizer
+	url = https://github.com/IlyaGusev/Tokenizer
+[submodule "lib/drogon"]
+	path = lib/drogon
+	url = https://github.com/an-tao/drogon.git
+[submodule "lib/rocksdb"]
+	path = lib/rocksdb
+	url = https://github.com/facebook/rocksdb.git
