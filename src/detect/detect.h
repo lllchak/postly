@@ -13,5 +13,4 @@ class FastText;
 postly::ELanguage DetectLanguage(const fasttext::FastText& model,
                                  const TDocument& doc);
 postly::ECategory DetectCategory(const fasttext::FastText& model,
-                                 const std::string& title,
-                                 const std::string& text);
+                                 const std::string& title);

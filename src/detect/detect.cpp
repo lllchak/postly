@@ -94,10 +94,8 @@ postly::ELanguage DetectLanguage(const fasttext::FastText& model,
 }
 
 postly::ECategory DetectCategory(const fasttext::FastText& model,
-                                 const std::string& title,
-                                 const std::string& text) {
-    const std::string input(title + " " + text);
-    auto categ = GetCategory(model, input, 0.0);
+                                 const std::string& title) {
+    auto categ = GetCategory(model, title, 0.1);
 
-    return categ ? FromString<postly::ECategory>(categ->first) : postly::NC_UNDEFINED;
+    return categ.has_value() ? FromString<postly::ECategory>(categ->first) : postly::NC_UNDEFINED;
 }

@@ -1,0 +1,20 @@
+
+Using:
+  php dc-check.php <binary> all <port> <source_dir>
+    where:
+      <binary>     - path to your tgnews binary
+      <port>       - any available port
+      <source_dir> - path to the folder with HTML-files containing article texts
+
+You can also check every single command:
+  php dc-check.php <binary> languages <source_dir>
+  php dc-check.php <binary> news <source_dir>
+  php dc-check.php <binary> categories <source_dir>
+  php dc-check.php <binary> threads <source_dir>
+  php dc-check.php <binary> server <port> <source_dir>
+
+You can change these options if needed:
+  CURL_VERBOSE    = true|false     - enable/disable cURL verbose information
+  BINARY_OUTPUT   = true|false     - enable/disable output of your tgnews binary
+  HTTP_SERVER_LOG = <path_to_file> - path to the file to which stderr/stdout
+                                     of your tgnews server will be written

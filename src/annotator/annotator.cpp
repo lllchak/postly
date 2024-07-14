@@ -48,7 +48,7 @@ TAnnotator::TAnnotator(const std::string& configPath,
             continue;
         }
         CategDetectors[lang].loadModel(config.path());
-        LLOG("FastText:lang=" << ToString(lang) << " category model loaded", ELogLevel::LL_INFO);
+        LLOG("FastText:lang=" << ToString(lang) << " category model loaded [" << config.path() << "]", ELogLevel::LL_INFO);
     }
 
     for (const auto& config : Config.embedders()) {
@@ -76,20 +76,20 @@ TAnnotator::ProcessAll(const std::vector<std::string>& filesNames,
             futures.push_back(threadPool.enqueue<TFunc>(&TAnnotator::ProcessHTML, this, path));
         }
     } else if (inputFormat == postly::IF_JSON) {
-        std::vector<TDocument> parsedDocs;
+        std::vector<nlohmann::json> parsedDocs;
         for (const auto& path : filesNames) {
             std::ifstream fileStream(path);
             nlohmann::json json;
             fileStream >> json;
             for (const auto& obj : json) {
-                parsedDocs.emplace_back(obj);
+                parsedDocs.push_back(obj);
             }
         }
         parsedDocs.shrink_to_fit();
         dbDocs.reserve(parsedDocs.size());
         futures.reserve(parsedDocs.size());
-        for (const TDocument& parsedDoc : parsedDocs) {
-            futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
+        for (const nlohmann::json& parsedDoc : parsedDocs) {
+            futures.push_back(threadPool.enqueue(&TAnnotator::ProcessJson, this, parsedDoc));
         }
     } else if (inputFormat == postly::IF_JSONL) {
         std::vector<TDocument> parsedDocs;
@@ -165,7 +165,7 @@ TAnnotator::ProcessDocument(const TDocument& doc) const {
     auto detectorIt = CategDetectors.find(dbDoc.Language);
     if (detectorIt != CategDetectors.end()) {
         const auto& detector = detectorIt->second;
-        dbDoc.Category = DetectCategory(detector, title, text);
+        dbDoc.Category = DetectCategory(detector, title);
     }
 
     for (const auto& [embedInfo, embedder] : Embedders) {
@@ -196,6 +196,11 @@ std::optional<TDBDocument> TAnnotator::ProcessHTML(const tinyxml2::XMLDocument& 
     return doc.has_value() ? ProcessDocument(*doc) : std::nullopt;
 }
 
+std::optional<TDBDocument> TAnnotator::ProcessJson(const nlohmann::json& json) const {
+    std::optional<TDocument> doc = ParseJson(json);
+    return doc.has_value() ? ProcessDocument(*doc) : std::nullopt;
+}
+
 std::optional<TDocument> TAnnotator::ParseHTML(const std::string& path) const {
     TDocument doc;
     try {
@@ -211,6 +216,16 @@ std::optional<TDocument> TAnnotator::ParseHTML(const tinyxml2::XMLDocument& html
     TDocument doc;
     try {
         doc.FromHTML(html, filename, Config.parse_links(), Config.shrink_text(), Config.max_words());
+    } catch (...) {
+        return std::nullopt;
+    }
+    return doc;
+}
+
+std::optional<TDocument> TAnnotator::ParseJson(const nlohmann::json& json) const {
+    TDocument doc;
+    try {
+        doc.FromJson(json);
     } catch (...) {
         return std::nullopt;
     }

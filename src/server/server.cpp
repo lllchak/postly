@@ -110,9 +110,24 @@ int TServer::Run(const std::uint16_t port) {
     TAtomic<TIndex> index;
     drogon::DrClassMap::getSingleInstance<TController>()->Init(&index, db.get(), std::move(annotator), std::move(ranker));
 
-    for (const auto& el : drogon::app().getHandlersInfo()) {
-        LLOG(std::get<0>(el) << ' ' << std::get<1>(el) << ' ' << std::get<2>(el), ELogLevel::LL_DEBUG);
-    }
+    auto initContoller = [&, annotator=std::move(annotator)]() mutable {
+        drogon::DrClassMap::getSingleInstance<TController>()->Init(&index, db.get(), std::move(annotator), std::move(ranker));
+    };
+
+    std::thread clusteringThread([&, sleep_ms=Config.clusterer_sleep()]() {
+        bool firstRun = true;
+        while (true) {
+            TIndex newIndex = serverIndex.Build();
+            index.Set(std::make_shared<TIndex>(std::move(newIndex)));
+
+            if (firstRun) {
+                initContoller();
+                firstRun = false;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
+        }
+    });
 
     drogon::app().run();
 

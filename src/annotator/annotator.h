@@ -43,6 +43,7 @@ public:
     std::optional<TDBDocument> ProcessHTML(const std::string& path) const;
     std::optional<TDBDocument> ProcessHTML(
         const tinyxml2::XMLDocument& html, const std::string& filename) const;
+    std::optional<TDBDocument> ProcessJson(const nlohmann::json& json) const;
 
 private:
     std::optional<TDBDocument> ProcessDocument(const TDocument& document) const;
@@ -50,6 +51,7 @@ private:
     std::optional<TDocument> ParseHTML(const std::string& path) const;
     std::optional<TDocument> ParseHTML(
         const tinyxml2::XMLDocument& html, const std::string& filename) const;
+    std::optional<TDocument> ParseJson(const nlohmann::json& json) const;
 
     std::string Tokenize(const std::string& text) const;
 
