@@ -168,3 +168,6 @@ models/ru_cat_v5.ftz
 models/ru_idfs.txt
 models/ru_tfidf_tsvd_embedder.pt
 models/ru_vectors_v3.bin
+
+# viewer data
+html_sample/

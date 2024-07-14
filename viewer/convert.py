@@ -25,7 +25,7 @@ def convert(
         documents = {doc["file_name"]: doc for doc in documents}
     with open(tops_file, "r") as r:
         tops = json.load(r)
-    static_dirs = ("icons", "css", "js")
+    static_dirs = ("css", "js")
     for dir_name in static_dirs:
         static_output_dir = os.path.join(output_dir, dir_name)
         static_input_dir = os.path.join(templates_dir, dir_name)

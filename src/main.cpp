@@ -77,23 +77,25 @@ int main(int argc, char** argv) {
     std::vector<std::string> langs = vm["languages"].as<std::vector<std::string>>();
     TAnnotator annotator = TAnnotator(vm["annotator_config"].as<std::string>(), langs, mode);
     TClusterer clusterer = TClusterer(vm["clusterer_config"].as<std::string>());
-    TSummarizer summarizer = TSummarizer(vm["summmarizer_config"].as<std::string>());
+    TSummarizer summarizer = TSummarizer(vm["summarizer_config"].as<std::string>());
     TRanker ranker = TRanker(vm["ranker_config"].as<std::string>());
 
-    std::vector<std::string> files;
     std::string input = vm["input"].as<std::string>();
     postly::EInputFormat inputFormat = postly::IF_UNDEFINED;
-    std::vector<std::string> fileNames;
+    std::vector<std::string> files;
     if (boost::algorithm::ends_with(input, ".json")) {
         inputFormat = postly::IF_JSON;
-        fileNames.push_back(input);
+        files.push_back(input);
+        LLOG("JSON input", ELogLevel::LL_INFO);
     } else if (boost::algorithm::ends_with(input, ".jsonl")) {
         inputFormat = postly::IF_JSONL;
-        fileNames.push_back(input);
+        files.push_back(input);
+        LLOG("JSONL input", ELogLevel::LL_INFO);
     } else {
         inputFormat = postly::IF_HTML;
         int nDocs = vm["ndocs"].as<int>();
-        FilesFromDir(input, fileNames, nDocs);
+        FilesFromDir(input, files, nDocs);
+        LLOG("Dir input, n docs: " << files.size(), ELogLevel::LL_INFO);
     }
     const bool saveNotNews = vm["save_not_news"].as<bool>();
     const bool debugMode = vm["debug_mode"].as<bool>();

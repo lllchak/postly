@@ -9,29 +9,24 @@
 #include <sstream>
 #include <vector>
 
-inline static int FT_PREFIX_LEN = 9;
-
 namespace {
 
 std::optional<std::pair<std::string, double>>
 GetCategory(const fasttext::FastText& model,
-            const std::string& text,
+            const std::string& originalText,
             const double threshold) {
-    std::string input = text;
-    std::replace(input.begin(), input.end(), '\n', ' ');
-    std::istringstream input_stream(input);
-
-    std::vector<std::pair<fasttext::real, std::string>> pred;
-    model.predictLine(input_stream, pred, 1, threshold);
-
-    if (pred.empty()) {
+    std::string text = originalText;
+    std::replace(text.begin(), text.end(), '\n', ' ');
+    std::istringstream ifs(text);
+    std::vector<std::pair<fasttext::real, std::string>> predictions;
+    model.predictLine(ifs, predictions, 1, threshold);
+    if (predictions.empty()) {
         return std::nullopt;
     }
-
-    const double prob = pred[0].first;
-    const std::string label = pred[0].second.substr(FT_PREFIX_LEN);
-
-    return std::make_pair(label, prob);
+    double probability = predictions[0].first;
+    const size_t FT_PREFIX_LENGTH = 9;
+    const std::string label = predictions[0].second.substr(FT_PREFIX_LENGTH);
+    return std::make_pair(label, probability);
 }
 
 bool IsDirtyDoc(const TDocument& doc) {
@@ -40,7 +35,7 @@ bool IsDirtyDoc(const TDocument& doc) {
     std::size_t i = 0;
 
     while(i < doc.Title.size()) {
-        unsigned char sym = (unsigned char)(doc.Title[i]);
+        unsigned char sym = (unsigned char) doc.Title[i];
         if (sym <= 127) {
             ++realSize;
             ++i;
@@ -57,10 +52,9 @@ bool IsDirtyDoc(const TDocument& doc) {
             if (i >= doc.Title.size()) {
                 break;
             }
-            unsigned char sym2 = (unsigned char)(doc.Title[i]);
+            unsigned char sym2 = (unsigned char) doc.Title[i];
 
-            if (((sym == 208) && (sym2 >= 144)) ||
-                ((sym == 209) && (sym2 <= 143))) {
+            if (((sym == 208) && (sym2 >= 144)) || ((sym == 209) && (sym2 <= 143))) {
                 ++realSize;
                 i += 1;
             } else {
@@ -80,31 +74,28 @@ bool IsDirtyDoc(const TDocument& doc) {
 
 postly::ELanguage DetectLanguage(const fasttext::FastText& model,
                                  const TDocument& doc) {
-    const std::string docText(doc.Title + ' ' + doc.Description + ' ' + doc.Text.substr(0, 100));
-    const auto categ = GetCategory(model, docText, 0.4);
-
-    if (!categ.has_value()) {
+    std::string sample(doc.Title + " " + doc.Description + " " + doc.Text.substr(0, 100));
+    auto pair = GetCategory(model, sample, 0.4);
+    if (!pair) {
         return postly::NL_UNDEFINED;
     }
+    const std::string& label = pair->first;
+    double probability = pair->second;
 
     if (IsDirtyDoc(doc)) {
         return postly::NL_OTHER;
     }
 
-    const auto& [label, prob] = categ.value();
     postly::ELanguage lang = FromString<postly::ELanguage>(label);
-    if ((lang == postly::NL_RU && prob >= 0.6) ||
-        (lang != postly::NL_RU && lang != postly::NL_UNDEFINED)) {
+    if ((lang == postly::NL_RU && probability >= 0.6) || (lang != postly::NL_RU && lang != postly::NL_UNDEFINED)) {
         return lang;
     }
-
     return postly::NL_OTHER;
 }
 
 postly::ECategory DetectCategory(const fasttext::FastText& model,
                                  const std::string& title,
-                                 const std::string& text)
-{
+                                 const std::string& text) {
     const std::string input(title + " " + text);
     auto categ = GetCategory(model, input, 0.0);
 

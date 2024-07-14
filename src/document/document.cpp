@@ -56,11 +56,9 @@ void TDocument::FromJson(const nlohmann::json& json) {
     json.at("title").get_to(Title);
     json.at("description").get_to(Description);
     json.at("text").get_to(Text);
-
     if (json.contains("file_name")) {
         json.at("file_name").get_to(Filename);
     }
-
     if (json.contains("out_links")) {
         json.at("out_links").get_to(OutLinks);
     }

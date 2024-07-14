@@ -31,9 +31,6 @@ using TFTCategDetectors =
 
 class TAnnotator {
 public:
-    using TFutures =
-        std::vector<std::future<std::optional<TDBDocument>>>;
-public:
     explicit TAnnotator(
         const std::string& configPath,
         const std::vector<std::string>& langs,
@@ -55,14 +52,6 @@ private:
         const tinyxml2::XMLDocument& html, const std::string& filename) const;
 
     std::string Tokenize(const std::string& text) const;
-
-    void FillFutures(const std::vector<std::string>& filesNames,
-                     std::vector<TDBDocument>& dbDocs,
-                     TFutures& futures,
-                     TThreadPool& threadPool,
-                     const postly::EInputFormat inputFormat) const;
-
-    bool ValidateDoc(const std::optional<TDBDocument>& doc) const;
 
 private:
     postly::TAnnotatorConfig Config;

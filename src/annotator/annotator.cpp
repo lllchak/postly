@@ -66,16 +66,68 @@ TAnnotator::ProcessAll(const std::vector<std::string>& filesNames,
                        const postly::EInputFormat inputFormat) const {
     TThreadPool threadPool;
     std::vector<TDBDocument> dbDocs;
-    TFutures futures;
+    std::vector<std::future<std::optional<TDBDocument>>> futures;
 
-    FillFutures(filesNames, dbDocs, futures, threadPool, inputFormat);
+    if (inputFormat == postly::IF_HTML) {
+        dbDocs.reserve(filesNames.size());
+        futures.reserve(filesNames.size());
+        for (const auto& path : filesNames) {
+            using TFunc = std::optional<TDBDocument>(TAnnotator::*)(const std::string&) const;
+            futures.push_back(threadPool.enqueue<TFunc>(&TAnnotator::ProcessHTML, this, path));
+        }
+    } else if (inputFormat == postly::IF_JSON) {
+        std::vector<TDocument> parsedDocs;
+        for (const auto& path : filesNames) {
+            std::ifstream fileStream(path);
+            nlohmann::json json;
+            fileStream >> json;
+            for (const auto& obj : json) {
+                parsedDocs.emplace_back(obj);
+            }
+        }
+        parsedDocs.shrink_to_fit();
+        dbDocs.reserve(parsedDocs.size());
+        futures.reserve(parsedDocs.size());
+        for (const TDocument& parsedDoc : parsedDocs) {
+            futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
+        }
+    } else if (inputFormat == postly::IF_JSONL) {
+        std::vector<TDocument> parsedDocs;
+        for (const auto& path: filesNames) {
+            std::ifstream fileStream(path);
+            std::string record;
+            while (std::getline(fileStream, record)) {
+                parsedDocs.emplace_back(nlohmann::json::parse(record));
+            }
+        }
+        parsedDocs.shrink_to_fit();
+        dbDocs.reserve(parsedDocs.size());
+        futures.reserve(parsedDocs.size());
+        for (const TDocument& parsedDoc: parsedDocs) {
+            futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
+        }
+    } else {
+        ENSURE(false, "Inappropriate input format, got " << ToString(inputFormat));
+    }
 
     for (auto& futureDoc : futures) {
         std::optional<TDBDocument> doc = futureDoc.get();
-        if (ValidateDoc(doc)) {
-            dbDocs.push_back(std::move(doc.value()));
+        if (!doc) {
+            continue;
         }
+        if (Languages.find(doc->Language) == Languages.end()) {
+            continue;
+        }
+        if (!doc->IsFullyIndexed()) {
+            continue;
+        }
+        if (!doc->IsNews() && !SaveNotNews) {
+            continue;
+        }
+
+        dbDocs.push_back(std::move(doc.value()));
     }
+
     futures.clear();
     dbDocs.shrink_to_fit();
     return dbDocs;
@@ -171,77 +223,4 @@ std::string TAnnotator::Tokenize(const std::string &text) const
     Tokenizer.tokenize(text, tokens);
 
     return boost::join(tokens, " ");
-}
-
-void TAnnotator::FillFutures(const std::vector<std::string>& filesNames,
-                             std::vector<TDBDocument>& dbDocs,
-                             TFutures& futures,
-                             TThreadPool& threadPool,
-                             const postly::EInputFormat inputFormat) const {
-    switch (inputFormat) {
-        case postly::IF_HTML: {
-            dbDocs.reserve(filesNames.size());
-            futures.reserve(filesNames.size());
-            for (const auto& path : filesNames) {
-                using TFunc = std::optional<TDBDocument>(TAnnotator::*)(const std::string&) const;
-                futures.push_back(threadPool.enqueue<TFunc>(&TAnnotator::ProcessHTML, this, path));
-            }
-            break;
-        }
-        case postly::IF_JSON: {
-            std::vector<TDocument> parsedDocs;
-            for (const auto& path: filesNames) {
-                std::ifstream fileStream(path);
-                nlohmann::json json;
-                fileStream >> json;
-                for (const auto& obj : json) {
-                    parsedDocs.emplace_back(obj);
-                }
-            }
-            parsedDocs.shrink_to_fit();
-            dbDocs.reserve(parsedDocs.size());
-            futures.reserve(parsedDocs.size());
-            for (const auto& parsedDoc: parsedDocs) {
-                futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
-            }
-            break;
-        }
-        case postly::IF_JSONL: {
-            std::vector<TDocument> parsedDocs;
-            for (const auto& path: filesNames) {
-                std::ifstream fileStream(path);
-                std::string record;
-                while (std::getline(fileStream, record)) {
-                    parsedDocs.emplace_back(nlohmann::json::parse(record));
-                }
-            }
-            parsedDocs.shrink_to_fit();
-            dbDocs.reserve(parsedDocs.size());
-            futures.reserve(parsedDocs.size());
-            for (const auto& parsedDoc: parsedDocs) {
-                futures.push_back(threadPool.enqueue(&TAnnotator::ProcessDocument, this, parsedDoc));
-            }
-            break;
-        }
-        default: {
-            ENSURE(false, "Inappropriate input format, got " << ToString(inputFormat));
-            break;
-        }
-    }
-}
-
-bool TAnnotator::ValidateDoc(const std::optional<TDBDocument>& doc) const {
-    if (!doc.has_value()) {
-        return false;
-    }
-    if (Languages.find(doc->Language) == Languages.end()) {
-        return false;
-    }
-    if (!doc->IsFullyIndexed()) {
-        return false;
-    }
-    if (!doc->IsNews() && !SaveNotNews) {
-        return false;
-    }
-    return true;
 }
