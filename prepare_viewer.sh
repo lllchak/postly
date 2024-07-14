@@ -16,4 +16,4 @@ cmake -DCMAKE_PREFIX_PATH=`python3 -c 'import torch;print(torch.utils.cmake_pref
 make -j4
 cd ..
 mkdir output
-bash build_viewer.sh viewer/templates output "03 May" viewer/data/demo_data.json
+bash build_viewer.sh viewer/templates viewer/build "03 May" viewer/data/demo_data.json
