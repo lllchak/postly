@@ -15,4 +15,4 @@ source $ENVIRONMENT_NAME/bin/activate
 pip install -r requirements.txt
 mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH=`python3 -c 'import torch;print(torch.utils.cmake_prefix_path)'` -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cd ..
 ```
-After running above instructions you should have postly executable in your local build directory
+After running above instructions you should have Postly executable in your local `build` directory
