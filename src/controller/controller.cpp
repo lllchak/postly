@@ -85,8 +85,8 @@ bool TController::IsReady(std::function<void(const drogon::HttpResponsePtr &)> &
 }
 
 std::optional<TDBDocument>
-TController::GetDBDocFromReq(const std::string& fname) const {
-    return Annotator->ProcessHTML(fname);
+TController::GetDBDocFromReq(const nlohmann::json& json) const {
+    return Annotator->ProcessJson(json);
 }
 
 bool TController::IndexDBDoc(const TDBDocument& doc,
@@ -219,11 +219,12 @@ void TController::Threads(const drogon::HttpRequestPtr& req,
 }
 
 void TController::Get(const drogon::HttpRequestPtr& req,
-                      std::function<void(const drogon::HttpResponsePtr&)>&& callback,
-                      const std::string& fname) const {
+                      std::function<void(const drogon::HttpResponsePtr&)>&& callback) const {
     if (!IsReady(std::move(callback))) {
         return;
     }
+
+    const std::string fname = req->getParameter("path");
 
     std::string serializedDoc;
     const rocksdb::Status s = DB->Get(rocksdb::ReadOptions(), fname, &serializedDoc);
@@ -251,10 +252,52 @@ void TController::Get(const drogon::HttpRequestPtr& req,
 }
 
 void TController::Post(const drogon::HttpRequestPtr& req,
-                       std::function<void(const drogon::HttpResponsePtr&)>&& callback,
-                       const std::string& fname) const {
+                       std::function<void(const drogon::HttpResponsePtr&)>&& callback) const {
     if (!IsReady(std::move(callback))) {
         return;
+    }
+
+    nlohmann::json body;
+    const auto requestBody = req->getJsonObject();
+    bool badRequest = false;
+    if (!requestBody->isMember("url")) {
+        badRequest |= true;
+    }
+    if (!requestBody->isMember("site_name")) {
+        badRequest |= true;
+    }
+    if (!requestBody->isMember("timestamp")) {
+        badRequest |= true;
+    }
+    if (!requestBody->isMember("title")) {
+        badRequest |= true;
+    }
+    if (!requestBody->isMember("description")) {
+        badRequest |= true;
+    }
+    if (!requestBody->isMember("text")) {
+        badRequest |= true;
+    }
+    if (!requestBody->isMember("file_name")) {
+        badRequest |= true;
+    }
+
+    if (badRequest) {
+        BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
+        return;
+    }
+
+    const std::string fname = requestBody->get("file_name", "").asString();
+
+    body["url"] = requestBody->get("url", "").asString();
+    body["site_name"] = requestBody->get("site_name", "").asString();
+    body["timestamp"] = requestBody->get("timestamp", "").asUInt64();
+    body["title"] = requestBody->get("title", "").asString();
+    body["description"] = requestBody->get("description", "").asString();
+    body["text"] = requestBody->get("text", "").asString();
+    body["file_name"] = fname;
+    if (requestBody->isMember("language")) {
+        body["language"] = requestBody->get("language", "").asString();
     }
 
     const std::optional<int64_t> ttl = GetTtlHeader(req->getHeader("Cache-Control"));
@@ -263,7 +306,7 @@ void TController::Post(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    std::optional<TDBDocument> dbDoc = GetDBDocFromReq(fname);
+    std::optional<TDBDocument> dbDoc = GetDBDocFromReq(body);
     if (!dbDoc) {
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;

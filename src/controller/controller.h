@@ -13,10 +13,10 @@ class TController : public drogon::HttpController<TController, false> {
 public:
     METHOD_LIST_BEGIN
         ADD_METHOD_TO(TController::Threads, "/threads", { drogon::Get });
-        ADD_METHOD_TO(TController::Put, "/put/{1}", { drogon::Put });
-        ADD_METHOD_TO(TController::Delete, "/delete/{1}", { drogon::Delete });
-        ADD_METHOD_TO(TController::Get, "/get/{1}", { drogon::Get });
-        ADD_METHOD_TO(TController::Post, "/post/{1}", { drogon::Post });
+        ADD_METHOD_TO(TController::Put, "/put?path=", { drogon::Put });
+        ADD_METHOD_TO(TController::Delete, "/delete?path=", { drogon::Delete });
+        ADD_METHOD_TO(TController::Get, "/get?path=", { drogon::Get });
+        ADD_METHOD_TO(TController::Post, "/post?path=", { drogon::Post });
         ADD_METHOD_TO(TController::Ping, "/ping", { drogon::Get });
     METHOD_LIST_END
 
@@ -38,12 +38,10 @@ public:
         std::function<void(const drogon::HttpResponsePtr&)>&& callback) const;
     void Get(
         const drogon::HttpRequestPtr& req,
-        std::function<void(const drogon::HttpResponsePtr&)>&& callback,
-        const std::string& fname) const;
+        std::function<void(const drogon::HttpResponsePtr&)>&& callback) const;
     void Post(
         const drogon::HttpRequestPtr& req,
-        std::function<void(const drogon::HttpResponsePtr&)>&& callback,
-        const std::string& fname) const;
+        std::function<void(const drogon::HttpResponsePtr&)>&& callback) const;
     void Ping(
         const drogon::HttpRequestPtr& req,
         std::function<void(const drogon::HttpResponsePtr&)>&& callback) const;
@@ -51,7 +49,7 @@ public:
 private:
     bool IsReady(
         std::function<void(const drogon::HttpResponsePtr&)> &&callback) const;
-    std::optional<TDBDocument> GetDBDocFromReq(const std::string& fname) const;
+    std::optional<TDBDocument> GetDBDocFromReq(const nlohmann::json& json) const;
     bool IndexDBDoc(
         const TDBDocument& doc,
         const std::string& fname) const;

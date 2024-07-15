@@ -62,6 +62,9 @@ void TDocument::FromJson(const nlohmann::json& json) {
     if (json.contains("out_links")) {
         json.at("out_links").get_to(OutLinks);
     }
+    if (json.contains("language")) {
+        Language = json.at("language");
+    }
 }
 
 std::string GetFullText(const tinyxml2::XMLElement* element) {

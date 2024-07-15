@@ -136,7 +136,11 @@ TAnnotator::ProcessAll(const std::vector<std::string>& filesNames,
 std::optional<TDBDocument>
 TAnnotator::ProcessDocument(const TDocument& doc) const {
     TDBDocument dbDoc;
-    dbDoc.Language = DetectLanguage(LangDetector, doc);
+    if (doc.Language.has_value()) {
+        dbDoc.Language = doc.Language.value();
+    } else {
+        dbDoc.Language = DetectLanguage(LangDetector, doc);
+    }
     dbDoc.Url = doc.Url;
     dbDoc.Host = GetHostFromUrl(dbDoc.Url);
     dbDoc.SiteName = doc.SiteName;

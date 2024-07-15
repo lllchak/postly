@@ -2,6 +2,8 @@
 
 #include <nlohmann_json/json.hpp>
 
+#include "enum.pb.h"
+
 #include <string>
 #include <vector>
 #include <cstdint>
@@ -24,6 +26,7 @@ public:
     uint64_t FetchTime = 0;
 
     std::vector<std::string> OutLinks;
+    std::optional<postly::ELanguage> Language;
 
 public:
     TDocument() = default;

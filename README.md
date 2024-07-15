@@ -6,7 +6,7 @@ Here you can find overall description about project techologies, architecture an
 - [English](https://docs.google.com/document/d/1-aq0RUR4MbeO4p5Mpyv9Q9m4ttdJcg6WfVTOvoAzRt8/edit?usp=sharing)
 
 ## Environment setup
-First, install required dependencies
+First things first, install required dependencies
 
 Linux
 `sudo apt-get update && xargs apt-get install -y --no-install-recommends < packages.txt`
@@ -32,3 +32,12 @@ Viewer is a tool designed to test and debug service logic by-hand, using it like
 Note: it is able to update viewer only from master for now
 
 Viewer is available at [lllchak.github.io/postly/](https://lllchak.github.io/postly/)
+
+## Server
+To run clustering server daemon you need to build a Postly image (ensure you got [Docker](https://docs.docker.com/engine/install/) installed)
+
+`docker build -t postly .`
+
+After image is built you can run Postly container. Simply call
+
+`docker run ...`
