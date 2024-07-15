@@ -28,12 +28,6 @@ void BuildDebugInfo(nlohmann::json& object, const TWCluster& cluster) {
     object["importance"] = cluster.Weight.Importance;
     object["best_time"] = cluster.Weight.BestTime;
     object["age_penalty"] = cluster.Weight.AgePenalty;
-    object["average_us"] = cluster.Cluster.get().GetCountryShare().at("US");
-    object["w_average_us"] = cluster.Cluster.get().GetWeightedCountryShare().at("US");
-    object["average_gb"] = cluster.Cluster.get().GetCountryShare().at("GB");
-    object["w_average_gb"] = cluster.Cluster.get().GetWeightedCountryShare().at("GB");
-    object["average_in"] = cluster.Cluster.get().GetCountryShare().at("IN");
-    object["w_average_in"] = cluster.Cluster.get().GetWeightedCountryShare().at("IN");
 
     for (const auto& weight : cluster.Cluster.get().GetDocWeights()) {
         object["article_weights"].push_back(weight);
