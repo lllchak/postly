@@ -19,5 +19,7 @@ After running above instructions you should have Postly executable in your local
 
 ## Viewer
 Viewer is a tool designed to test and debug service logic by-hand, using it like a general user. Viewer deploying from `/docs` by running `prepare_viewer.sh` script from root.
+
 Note: it is able to update viewer only from master for now
+
 Viewer is available at [lllchak.github.io/postly/](https://lllchak.github.io/postly/)
