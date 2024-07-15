@@ -13,7 +13,6 @@ def convert(
     documents_file: str,
     tops_file: str,
     languages: str,
-    version: str,
     date: str,
     nclusters: int
 ) -> None:
@@ -65,7 +64,6 @@ def convert(
                 w.write(rubric_template.render(
                     top=top,
                     date=date,
-                    version=version,
                     language=language,
                     current_page=current_page
                 ))
@@ -78,7 +76,6 @@ if __name__ == "__main__":
     parser.add_argument('--documents-file', type=str, required=True)
     parser.add_argument('--tops-file', type=str, required=True)
     parser.add_argument('--languages', type=str, default="ru,en")
-    parser.add_argument('--version', type=str, default="3.0.0")
     parser.add_argument('--date', type=str, default="03 May")
     parser.add_argument('--nclusters', type=int, default=200)
     args = parser.parse_args()
