@@ -10,8 +10,7 @@ TFTEmbedder::TFTEmbedder(
     const std::string& embeddingModelPath,
     const postly::EEmbedderField field,
     const postly::EAggregationMode mode,
-    const std::size_t maxWords,
-    const std::string& modelPath
+    const std::size_t maxWords
 )
     : IEmbedder(field)
     , Mode(mode)
@@ -20,21 +19,17 @@ TFTEmbedder::TFTEmbedder(
     assert(!embeddingModelPath.empty());
     EmbeddingModel.loadModel(embeddingModelPath);
     LLOG("FastText model loaded [" << embeddingModelPath << ']', ELogLevel::LL_INFO);
-
-    if (!modelPath.empty()) {
-        Model = torch::jit::load(modelPath);
-        LLOG("Torch model loaded [" << modelPath << ']', ELogLevel::LL_INFO);
-    }
 }
 
 TFTEmbedder::TFTEmbedder(const postly::TEmbedderConfig& config)
     : TFTEmbedder(config.vector_model_path(),
                   config.embedder_field(),
                   config.aggregation_mode(),
-                  config.max_words(),
-                  config.model_path()) {}
+                  config.max_words()) {}
 
 std::vector<float> TFTEmbedder::CalcEmbedding(const std::string& input) const {
+    assert(Mode != postly::AM_MATRIX);
+
     std::istringstream input_stream(input);
     const std::size_t size = EmbeddingModel.getDimension();
 
@@ -80,30 +75,7 @@ std::vector<float> TFTEmbedder::CalcEmbedding(const std::string& input) const {
         return std::vector<float>(avgEmb.data(), avgEmb.data() + avgEmb.size());
     } else if (Mode == postly::AM_MIN) {
         return std::vector<float>(minEmb.data(), minEmb.data() + minEmb.size());
-    } else if (Mode == postly::AM_MAX) {
+    } else {
         return std::vector<float>(maxEmb.data(), maxEmb.data() + maxEmb.size());
     }
-
-    assert(Mode == postly::AM_MATRIX);
-
-    int dim = static_cast<int>(size);
-    auto tensor = torch::zeros({dim * 3}, torch::requires_grad(false));
-
-    tensor.slice(0, 0, dim) = torch::from_blob(avgEmb.data(), {dim});
-    tensor.slice(0, dim, 2 * dim) = torch::from_blob(maxEmb.data(), {dim});
-    tensor.slice(0, 2 * dim, 3 * dim) = torch::from_blob(minEmb.data(), {dim});
-
-    std::vector<torch::jit::IValue> inputs;
-    inputs.emplace_back(tensor.unsqueeze(0));
-
-    at::Tensor outputTensor = Model.forward(inputs).toTensor().squeeze(0).contiguous();
-    float* outputTensorPtr = outputTensor.data_ptr<float>();
-    size_t outputDim = outputTensor.size(0);
-
-    std::vector<float> res(outputDim);
-    for (size_t i = 0; i < outputDim; i++) {
-        res[i] = outputTensorPtr[i];
-    }
-
-    return res;
 }

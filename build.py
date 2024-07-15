@@ -1,12 +1,18 @@
+from argparse import ArgumentParser
 import sys
 import os
+
 
 def in_venv():
     return sys.prefix != sys.base_prefix
 
 
 if __name__ == '__main__':
-    if not in_venv():
+    parser = ArgumentParser()
+    parser.add_argument('--local', action='store_true', help='Flag for local building')
+    args = parser.parse_args()
+
+    if args.local and not in_venv():
         raise ValueError('''
 Friendly reminder. Install python virtual environment to run build properly
     1. Create virtual environment - `python -m venv <environment_name>`

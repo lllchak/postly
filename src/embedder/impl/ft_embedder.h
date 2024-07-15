@@ -18,8 +18,7 @@ public:
         const std::string& vectorModelPath,
         const postly::EEmbedderField field,
         const postly::EAggregationMode mode,
-        const std::size_t maxWords,
-        const std::string& modelPath);
+        const std::size_t maxWords);
 
     explicit TFTEmbedder(const postly::TEmbedderConfig& config);
 
@@ -29,5 +28,4 @@ private:
     postly::EAggregationMode Mode;
     fasttext::FastText EmbeddingModel;
     std::size_t MaxWords;
-    mutable torch::jit::script::Module Model;
 };

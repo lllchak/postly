@@ -36,7 +36,6 @@ message TEmbedderConfig {
     optional EEmbedderField embedder_field = 4 [default = EF_UNDEFINED];
     optional EAggregationMode aggregation_mode = 5 [default = AM_UNDEFINED];
     optional uint32 max_words = 6 [default = 100];
-    optional string model_path = 7 [default = ""];
     optional string vector_model_path = 8 [default = ""];
     optional string vocabulary_path = 9 [default = ""];
 }

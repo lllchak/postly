@@ -40,7 +40,6 @@ enum EAggregationMode {
     AM_AVG = 1;
     AM_MAX = 2;
     AM_MIN = 3;
-    AM_MATRIX = 4;
 };
 
 enum EEmbedderField {

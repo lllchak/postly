@@ -1,0 +1,9 @@
+cmake
+libboost-all-dev
+build-essential
+libjsoncpp-dev
+uuid-dev
+protobuf-compiler
+libprotobuf-dev
+python3.9
+python3-pip

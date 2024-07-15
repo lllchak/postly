@@ -7,6 +7,7 @@ pip install cython
 pip install torch
 pip install -r viewer/requirements.txt
 
+mkdir -p models
 bash download_models.sh
 wget https://www.dropbox.com/s/y3j9mxzpad8rkku/en_ru_0502_0503.json.tar.gz -O - | tar -xz --to-stdout en_ru_0502_0503.json > viewer/data/demo_data.json
 

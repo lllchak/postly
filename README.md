@@ -5,6 +5,15 @@ Here you can find overall description about project techologies, architecture an
 - [Russian](https://docs.google.com/document/d/1k1X_q1qeb2eXTfIzs4Zo58KBOwC6U4bZ_9drrfkWBgQ/edit?usp=sharing)
 - [English](https://docs.google.com/document/d/1-aq0RUR4MbeO4p5Mpyv9Q9m4ttdJcg6WfVTOvoAzRt8/edit?usp=sharing)
 
+## Environment setup
+First, install required dependencies
+
+Linux
+`sudo apt-get update && xargs apt-get install -y --no-install-recommends < packages.txt`
+
+MacOS
+`brew install boost jsoncpp ossp-uuid protobuf`
+
 ## Build
 To build Postly from sources you can do the following
 ```bash
@@ -13,7 +22,7 @@ cd postly
 python -m venv $ENVIRONMENT_NAME  # Essential for project deps
 source $ENVIRONMENT_NAME/bin/activate
 pip install -r requirements.txt
-mkdir build && cd build && cmake -DCMAKE_PREFIX_PATH=`python3 -c 'import torch;print(torch.utils.cmake_prefix_path)'` -DCMAKE_BUILD_TYPE=Release .. && make -j4 && cd ..
+python build.py --local
 ```
 After running above instructions you should have Postly executable in your local `build` directory
 
