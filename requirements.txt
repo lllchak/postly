@@ -15,3 +15,5 @@ threadpoolctl
 torch
 typing_extensions
 wheel
+locust
+pyquery
