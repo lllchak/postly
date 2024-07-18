@@ -7,6 +7,8 @@
 #include "../utils.h"
 
 #include <optional>
+#include <chrono>
+
 #include <tinyxml2/tinyxml2.h>
 
 namespace {
@@ -62,6 +64,43 @@ Json::Value ToJson(const TCluster& cluster) {
     return json;
 }
 
+std::optional<nlohmann::json> ParseRequestBody(const drogon::HttpRequestPtr& req) {
+    nlohmann::json body;
+    const auto requestBody = req->getJsonObject();
+    bool valid = true;
+
+    if (!requestBody->isMember("url")) {
+        valid &= false;
+    }
+    if (!requestBody->isMember("title")) {
+        valid &= false;
+    }
+    if (!requestBody->isMember("text")) {
+        valid &= false;
+    }
+    if (!requestBody->isMember("file_name")) {
+        valid &= false;
+    }
+
+    if (!valid) {
+        return std::nullopt;
+    }
+
+    body["url"] = requestBody->get("url", "").asString();
+    body["site_name"] = requestBody->get("site_name", "").asString();
+    body["timestamp"] = requestBody->get("timestamp",
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()).asUInt64();
+    body["title"] = requestBody->get("title", "").asString();
+    body["description"] = requestBody->get("description", "").asString();
+    body["text"] = requestBody->get("text", "").asString();
+    body["file_name"] = requestBody->get("file_name", "").asString();
+    if (requestBody->isMember("language")) {
+        body["language"] = requestBody->get("language", "").asString();
+    }
+
+    return body;
+}
+
 }  // namespace
 
 void TController::Init(const TAtomic<TIndex>* index,
@@ -114,10 +153,20 @@ drogon::HttpStatusCode TController::GetCode(const std::string& fname,
 }
 
 void TController::Put(const drogon::HttpRequestPtr& req,
-                      std::function<void(const drogon::HttpResponsePtr&)>&& callback,
-                      const std::string& fname) const {
+                      std::function<void(const drogon::HttpResponsePtr&)>&& callback) const {
     if (!IsReady(std::move(callback))) {
         return;
+    }
+
+    const auto maybeBody = ParseRequestBody(req);
+    if (!maybeBody.has_value()) {
+        BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
+        return;
+    }
+    const nlohmann::json body = maybeBody.value();
+    std::string fname = body["file_name"];
+    if (!fname.size()) {
+        fname = req->getParameter("key");
     }
 
     const std::optional<std::int64_t> ttl = GetTtlHeader(req->getHeader("Cache-Control"));
@@ -127,7 +176,7 @@ void TController::Put(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    std::optional<TDBDocument> doc = GetDBDocFromReq(fname);
+    std::optional<TDBDocument> doc = GetDBDocFromReq(body);
     if (!doc.has_value()) {
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;
@@ -150,11 +199,12 @@ void TController::Put(const drogon::HttpRequestPtr& req,
 }
 
 void TController::Delete(const drogon::HttpRequestPtr& req,
-                         std::function<void(const drogon::HttpResponsePtr&)>&& callback,
-                         const std::string& fname) const {
+                         std::function<void(const drogon::HttpResponsePtr&)>&& callback) const {
     if (!IsReady(std::move(callback))) {
         return;
     }
+
+    const std::string fname = req->getParameter("key");
 
     std::string val;
     const bool mayExist = DB->KeyMayExist(rocksdb::ReadOptions(), fname, &val);
@@ -224,14 +274,14 @@ void TController::Get(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    const std::string fname = req->getParameter("path");
+    const std::string fname = req->getParameter("key");
 
     std::string serializedDoc;
     const rocksdb::Status s = DB->Get(rocksdb::ReadOptions(), fname, &serializedDoc);
 
     Json::Value ret;
     ret["fname"] = fname;
-    ret["status"] = s.ok() ? "FOUND" : "NOT FOUND";
+    ret["status"] = s.ok() ? "fetched" : "no such key";
 
     if (s.ok()) {
         postly::TDocumentProto doc;
@@ -257,47 +307,15 @@ void TController::Post(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    nlohmann::json body;
-    const auto requestBody = req->getJsonObject();
-    bool badRequest = false;
-    if (!requestBody->isMember("url")) {
-        badRequest |= true;
-    }
-    if (!requestBody->isMember("site_name")) {
-        badRequest |= true;
-    }
-    if (!requestBody->isMember("timestamp")) {
-        badRequest |= true;
-    }
-    if (!requestBody->isMember("title")) {
-        badRequest |= true;
-    }
-    if (!requestBody->isMember("description")) {
-        badRequest |= true;
-    }
-    if (!requestBody->isMember("text")) {
-        badRequest |= true;
-    }
-    if (!requestBody->isMember("file_name")) {
-        badRequest |= true;
-    }
-
-    if (badRequest) {
+    const auto maybeBody = ParseRequestBody(req);
+    if (!maybeBody.has_value()) {
         BuildSimpleResponse(std::move(callback), drogon::k400BadRequest);
         return;
     }
-
-    const std::string fname = requestBody->get("file_name", "").asString();
-
-    body["url"] = requestBody->get("url", "").asString();
-    body["site_name"] = requestBody->get("site_name", "").asString();
-    body["timestamp"] = requestBody->get("timestamp", "").asUInt64();
-    body["title"] = requestBody->get("title", "").asString();
-    body["description"] = requestBody->get("description", "").asString();
-    body["text"] = requestBody->get("text", "").asString();
-    body["file_name"] = fname;
-    if (requestBody->isMember("language")) {
-        body["language"] = requestBody->get("language", "").asString();
+    const nlohmann::json body = maybeBody.value();
+    std::string fname = body["file_name"];
+    if (!fname.size()) {
+        fname = req->getParameter("key");
     }
 
     const std::optional<int64_t> ttl = GetTtlHeader(req->getHeader("Cache-Control"));
@@ -329,6 +347,7 @@ void TController::Post(const drogon::HttpRequestPtr& req,
     json["lang_code"] = dbDoc->HasSupportedLanguage() ? ToString(dbDoc->Language) : Json::Value::null;
     json["is_news"] = dbDoc->Category != postly::NC_UNDEFINED ? dbDoc->IsNews() : Json::Value::null;
     json["is_indexed"] = isIndexed;
+    json["filename"] = fname;
     Json::Value categories(Json::arrayValue);
     if (dbDoc->IsNews()) {
         categories.append(ToString(dbDoc->Category));

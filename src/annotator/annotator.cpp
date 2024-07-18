@@ -160,7 +160,8 @@ TAnnotator::ProcessDocument(const TDocument& doc) const {
     }
 
     if (doc.Text.length() < Config.min_text_length()) {
-        return dbDoc;
+        LLOG("Document " + dbDoc.Filename + " is tool small", LL_DEBUG);
+        return std::nullopt;
     }
 
     const std::string title = Tokenize(doc.Title);

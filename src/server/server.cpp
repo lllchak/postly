@@ -108,8 +108,6 @@ int TServer::Run(const std::uint16_t port) {
     drogon::app().registerController(controllerPtr);
 
     TAtomic<TIndex> index;
-    drogon::DrClassMap::getSingleInstance<TController>()->Init(&index, db.get(), std::move(annotator), std::move(ranker));
-
     auto initContoller = [&, annotator=std::move(annotator)]() mutable {
         drogon::DrClassMap::getSingleInstance<TController>()->Init(&index, db.get(), std::move(annotator), std::move(ranker));
     };

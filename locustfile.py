@@ -1,5 +1,6 @@
 from locust import HttpUser, task, constant
 import random
+import string
 from pyquery import PyQuery as pq
 
 class TTest(HttpUser):
@@ -15,6 +16,11 @@ class TTest(HttpUser):
             auth=None,
             headers={"Cache-Control": "max-age=100"},
         )
+
+    @task
+    def get(self):
+        path: str = ''.join(random.choice(string.digits) for _ in range(10))
+        self.client.get("/get?path={path}.html")
 
     def __get_lang(self):
         return random.choice(["en", "ru"])
