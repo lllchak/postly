@@ -3,5 +3,8 @@ diagrams/
 uploads/
 venv/
 viewer/
+build/
+data/
+notebooks/
 README.md
 LICENCE

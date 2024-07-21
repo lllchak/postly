@@ -4,7 +4,6 @@
 
 #include <Eigen/Core>
 #include <fasttext.h>
-#include <torch/script.h>
 
 struct TDocument;
 

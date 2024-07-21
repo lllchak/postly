@@ -7,7 +7,6 @@
 #include "../utils.h"
 
 #include <optional>
-#include <chrono>
 
 #include <tinyxml2/tinyxml2.h>
 
@@ -88,8 +87,7 @@ std::optional<nlohmann::json> ParseRequestBody(const drogon::HttpRequestPtr& req
 
     body["url"] = requestBody->get("url", "").asString();
     body["site_name"] = requestBody->get("site_name", "").asString();
-    body["timestamp"] = requestBody->get("timestamp",
-        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count()).asUInt64();
+    body["timestamp"] = requestBody->get("timestamp", 0).asUInt64();
     body["title"] = requestBody->get("title", "").asString();
     body["description"] = requestBody->get("description", "").asString();
     body["text"] = requestBody->get("text", "").asString();
@@ -166,7 +164,7 @@ void TController::Put(const drogon::HttpRequestPtr& req,
     const nlohmann::json body = maybeBody.value();
     std::string fname = body["file_name"];
     if (!fname.size()) {
-        fname = req->getParameter("key");
+        fname = req->getParameter("path");
     }
 
     const std::optional<std::int64_t> ttl = GetTtlHeader(req->getHeader("Cache-Control"));
@@ -204,7 +202,7 @@ void TController::Delete(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    const std::string fname = req->getParameter("key");
+    const std::string fname = req->getParameter("path");
 
     std::string val;
     const bool mayExist = DB->KeyMayExist(rocksdb::ReadOptions(), fname, &val);
@@ -217,7 +215,7 @@ void TController::Delete(const drogon::HttpRequestPtr& req,
     }
 
     BuildSimpleResponse(
-        std::move(callback), mayExist ? drogon::k204NoContent : drogon::k404NotFound);
+        std::move(callback), mayExist ? drogon::k200OK : drogon::k404NotFound);
 }
 
 void TController::Threads(const drogon::HttpRequestPtr& req,
@@ -274,7 +272,7 @@ void TController::Get(const drogon::HttpRequestPtr& req,
         return;
     }
 
-    const std::string fname = req->getParameter("key");
+    const std::string fname = req->getParameter("path");
 
     std::string serializedDoc;
     const rocksdb::Status s = DB->Get(rocksdb::ReadOptions(), fname, &serializedDoc);
@@ -315,7 +313,7 @@ void TController::Post(const drogon::HttpRequestPtr& req,
     const nlohmann::json body = maybeBody.value();
     std::string fname = body["file_name"];
     if (!fname.size()) {
-        fname = req->getParameter("key");
+        fname = req->getParameter("path");
     }
 
     const std::optional<int64_t> ttl = GetTtlHeader(req->getHeader("Cache-Control"));

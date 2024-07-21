@@ -98,10 +98,10 @@ Usage example: `curl -X GET http://localhost:8000/get?path=my_path -i -H 'conten
 Usage example: `curl -X DELETE http://localhost:8000/delete?path=my_path -i -H 'content-type: application/json'`
 
 ## Image
-To run clustering server daemon you need to build a Postly image (ensure you got [Docker](https://docs.docker.com/engine/install/) installed)
+To run clustering server daemon you need to build a Postly image (make sure you got [Docker](https://docs.docker.com/engine/install/) installed)
 
-`docker build -t postly .`
+`docker build -t $IMAGE_NAME .` (running from project root)
 
 After image is built you can run Postly container. Simply call (runs Postly server)
 
-`docker run ...`
+`docker run -d -p 8000:8000 $IMAGE_NAME`
