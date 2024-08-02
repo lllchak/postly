@@ -5,7 +5,7 @@ DEMO_DATA="$4"
 
 DEMO_TOPS=$(mktemp)
 
-./build/postly --mode top --input ${DEMO_DATA} --debug_mode > ${DEMO_TOPS}
+./build/driver/driver --mode top --input ${DEMO_DATA} --debug_mode > ${DEMO_TOPS}
 
 python3 viewer/convert.py \
     --documents-file ${DEMO_DATA} \

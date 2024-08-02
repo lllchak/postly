@@ -1,6 +1,6 @@
 #include "server.h"
 
-#include "config.pb.h"
+#include "driver/config.pb.h"
 
 #include "../annotator/annotator.h"
 #include "../atomic/atomic.h"

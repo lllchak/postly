@@ -1,6 +1,6 @@
 #include "controller.h"
 
-#include "document.pb.h"
+#include "driver/document.pb.h"
 
 #include "../cluster/cluster.h"
 #include "../document/document.h"

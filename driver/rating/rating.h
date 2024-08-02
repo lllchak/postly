@@ -1,7 +1,7 @@
 #pragma once
 
-#include "config.pb.h"
-#include "enum.pb.h"
+#include "driver/config.pb.h"
+#include "driver/enum.pb.h"
 
 #include <string>
 #include <unordered_map>

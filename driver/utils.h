@@ -1,6 +1,6 @@
 #pragma once
 
-#include "enum.pb.h"
+#include "driver/enum.pb.h"
 
 #include <cassert>
 #include <chrono>

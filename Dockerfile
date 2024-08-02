@@ -29,4 +29,4 @@ else \
 fi
 RUN chmod +x /usr/src/app/build/postly
 
-CMD ["./build/postly", "--mode=server", "--input=8000"]
+CMD ["./build/driver/driver", "--mode=server", "--input=8000"]

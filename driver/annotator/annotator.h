@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.pb.h"
+#include "driver/config.pb.h"
 
 #include "../document/impl/db_document.h"
 #include "../document/document.h"

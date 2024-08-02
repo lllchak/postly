@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.pb.h"
+#include "driver/config.pb.h"
 
 #include "../rating/rating.h"
 #include "../cluster/cluster.h"

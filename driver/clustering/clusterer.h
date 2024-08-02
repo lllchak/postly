@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.pb.h"
+#include "driver/config.pb.h"
 
 #include "../cluster/cluster.h"
 #include "clustering.h"

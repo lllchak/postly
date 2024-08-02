@@ -1,5 +1,5 @@
-#include "config.pb.h"
-#include "enum.pb.h"
+#include "driver/config.pb.h"
+#include "driver/enum.pb.h"
 
 #include "annotator/annotator.h"
 #include "clustering/clusterer.h"

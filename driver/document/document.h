@@ -2,7 +2,7 @@
 
 #include <nlohmann_json/json.hpp>
 
-#include "enum.pb.h"
+#include "driver/enum.pb.h"
 
 #include <string>
 #include <vector>
