@@ -35,15 +35,13 @@ void CheckIO(const postly::TServerConfig& config) {
     if (config.max_connection_num() >= limit.value()) {
         LLOG(
             "ulimit -n is smaller than the \"max_connection_num\" option; overflow is possible",
-            ELogLevel::LL_WARN
-        );
+            ELogLevel::LL_WARN);
     }
 
     if (config.db_max_open_files() >= limit.value()) {
         LLOG(
             "ulimit -n is smaller than the \"db_max_open_files\" option; overflow is possible",
-            ELogLevel::LL_WARN
-        );
+            ELogLevel::LL_WARN);
     }
 }
 
